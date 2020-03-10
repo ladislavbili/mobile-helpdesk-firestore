@@ -1,7 +1,7 @@
 import {LOGIN_START,LOGIN_FAIL,TOKEN_CHECKED,LOGIN_SUCCESS,LOGIN_LOGOUT } from '../types';
 import {LOGIN_URL, USERS_LIST } from '../urls';
 import {processError} from '../../helperFunctions';
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import jwt_decode from 'jwt-decode';
 import i18n from 'i18next';
 //All of these are actions, they return redux triggered functions, that have no return, just manipulate with the store

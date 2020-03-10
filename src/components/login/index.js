@@ -10,7 +10,7 @@ class TokenChecker extends Component {
     super(props);
   }
 
-  componentWillMount(){
+  UNSAFE_componentWillMount(){
     this.props.checkToken();
   }
 

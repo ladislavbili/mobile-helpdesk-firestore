@@ -3,7 +3,6 @@ import ReduxThunk from 'redux-thunk';
 
 import loginReducer from './reducers/loginReducer';
 import drawerReducer from './reducers/drawerReducer';
-import navigationReducer from './reducers/navigationReducer';
 import taskReducer from './reducers/taskReducer';
 import commentReducer from './reducers/commentReducer';
 import companyReducer from './reducers/companyReducer';
@@ -16,7 +15,6 @@ import subtaskReducer from './reducers/subtaskReducer';
 const reducers = combineReducers({
   loginReducer,
   drawerReducer,
-  navigationReducer,
   taskReducer,
   commentReducer,
   companyReducer,

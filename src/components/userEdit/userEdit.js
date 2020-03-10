@@ -7,8 +7,6 @@ import {Modal, Image} from 'react-native';
 import i18n from 'i18next';
 import {editUser} from '../../redux/actions';
 import {isEmail} from '../../helperFunctions';
-import PhotoUpload from 'react-native-photo-upload';
-var RNGRP = require('react-native-get-real-path');
 
 const languages = [{ id: 'en', name: 'English' }, { id: 'sk', name: 'Slovensky' }];
 
@@ -100,37 +98,6 @@ class UserEdit extends Component {
           </Right>
         </Header>
         <Content style={{ padding: 15 }}>
-
-          <PhotoUpload
-            height={50}
-            width={50}
-            quality={100}
-            noData={true}
-            onResizedImageUri={(file)=>{
-              RNGRP.getRealPathFromURI(file.uri).then(filePath =>{
-                let image = {...file};
-                image.filepath=filePath;
-                image.fileSize=image.size;
-                image.fileName=image.name;
-                image.type='image/jpeg';
-                image.fileSize=image.size;-
-                this.setState({image});
-              });
-            }}
-          >
-            <Image
-              style={{
-                paddingVertical: 30,
-                width: 75,
-                height: 75,
-                borderRadius: 75
-              }}
-              resizeMode='cover'
-              source={{
-                uri: this.props.user.image?this.props.user.image:'https://www.sparklabs.com/forum/styles/comboot/theme/images/default_avatar.jpg'
-              }}
-            />
-          </PhotoUpload>
 
           <Text note>{i18n.t('email')+'/'+i18n.t('username')}</Text>
           <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>

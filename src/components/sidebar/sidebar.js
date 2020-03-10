@@ -36,6 +36,23 @@ class SideBar extends Component {
           <Text note>{i18n.t('project')}</Text>
           <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
             <Picker
+              mode="dropdown"
+              iosIcon={<Icon name="arrow-down" />}
+              placeholder="Select your SIM"
+              placeholderStyle={{ color: "#bfc6ea" }}
+              placeholderIconColor="#007aff"
+              style={{ width: undefined }}
+              selectedValue={this.state.selected}
+              onValueChange={()=>{}}
+            >
+              <Picker.Item label="Wallet" value="key0" />
+              <Picker.Item label="ATM Card" value="key1" />
+              <Picker.Item label="Debit Card" value="key2" />
+              <Picker.Item label="Credit Card" value="key3" />
+              <Picker.Item label="Net Banking" value="key4" />
+            </Picker>
+
+            {false && <Picker
               supportedOrientations={['portrait', 'landscape']}
               selectedValue={this.state.project}
               onValueChange={(value)=>{
@@ -47,7 +64,7 @@ class SideBar extends Component {
               {[{title:i18n.t('all'), id:'all'}].concat(this.props.projects).map(
                 (project)=> <Item label={project.title} key={project.id} value={project.id} />
             )}
-          </Picker>
+          </Picker>}
         </View>
         { false &&
           <ListItem button noBorder >

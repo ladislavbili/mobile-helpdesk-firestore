@@ -39,7 +39,7 @@ export default class TaskEdit extends Component {
    * Before this component is loaded all of the required data should start fetching from the REST API, also
    * sets the hardware back button to show message about leaving unsaved task
    */
-   componentWillMount(){
+   UNSAFE_componentWillMount(){
      BackHandler.addEventListener('hardwareBackPress', () => {
        if(this.state.changed){
          this.leaveTask();

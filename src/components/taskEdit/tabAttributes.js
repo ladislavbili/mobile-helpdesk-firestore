@@ -10,8 +10,6 @@ import {editTask,getTaskSolvers,deleteFollower,addFollower, removeFile, uploadFi
 import {formatDate,processInteger, initialiseCustomAttributes, importExistingCustomAttributesForTask, containsNullRequiredAttribute, processCustomAttributes} from '../../helperFunctions';
 import TaskTag from './tag';
 import TaskFollower from './follower';
-import { DocumentPicker, DocumentPickerUtil } from 'react-native-document-picker';
-var RNGRP = require('react-native-get-real-path');
 
 const workTypes=['vzdialena podpora','servis IT','servis serverov','programovanie www','instalacie klientskeho os','bug reklamacia','navrh','material','cenova ponuka','administrativa','konzultacia','refakturacia','testovanie'];
 
@@ -710,19 +708,9 @@ class TabAtributes extends Component {
         <Button
           block
           primary
-          onPress={()=>
-            DocumentPicker.show({
-                filetype: [DocumentPickerUtil.allFiles()],
-              },(error,res) => {
-                RNGRP.getRealPathFromURI(res.uri).then(filePath =>{
-                  let file = {...res};
-                  file.filePath=filePath;
-                  file.name=file.fileName;
-                  file.size=file.fileSize;
-                  this.props.upadFile(file,this.props.token);
-                });
-                return;
-              })}>
+          onPress={()=>{
+
+          }}>
           <Text>{i18n.t('addAttachement')}</Text>
         </Button>
         <List style={{marginBottom:40}}>
