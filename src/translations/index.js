@@ -1,10 +1,9 @@
 import i18n from 'i18next';
-import { reactI18nextModule } from 'react-i18next';
+import { initReactI18next  } from 'react-i18next';
 import en from './en';
 import sk from './sk';
-
 i18n
-  .use(reactI18nextModule)
+  .use(initReactI18next)
   .init({
     fallbackLng: 'sk',
     lng: 'sk',
@@ -17,5 +16,4 @@ i18n
       escapeValue: false,
     }
   });
-
 export default i18n;

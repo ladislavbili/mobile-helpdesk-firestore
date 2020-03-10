@@ -1,6 +1,6 @@
 import { AppRegistry } from 'react-native';
 import React, { Component } from 'react';
-import { Input, Item, Container, Header, Title, Content, Button, Icon, Text, Left, Right, Body, View, Label, CheckBox } from 'native-base';
+import { Text } from 'native-base';
 import { Provider } from 'react-redux';
 import createStore from './src/redux/store';
 import Login from './src/components/login';
@@ -14,7 +14,7 @@ class App extends Component<Props> {
   render() {
     return (
       <Provider store={store} >
-        <Login />
+        <Login/>
       </Provider>
     );
   }
