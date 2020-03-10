@@ -1,0 +1,22 @@
+export default {
+  filters:{
+    en:'Filters',
+    sk:'Filtre',
+  },
+  projects:{
+    en:'Projects',
+    sk:'Projekty',
+  },
+  archived:{
+    en:'Archived',
+    sk:'Archívované',
+  },
+  none:{
+    en:'None',
+    sk:'Žiaden',
+  },
+  all:{
+    en:'All',
+    sk:'Všetky',
+  },
+};

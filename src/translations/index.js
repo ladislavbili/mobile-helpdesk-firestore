@@ -1,19 +1,31 @@
 import i18n from 'i18next';
 import { initReactI18next  } from 'react-i18next';
-import en from './en';
-import sk from './sk';
-i18n
-  .use(initReactI18next)
-  .init({
-    fallbackLng: 'sk',
-    lng: 'sk',
-    resources: {
-      en: {translation:en},
-      sk: {translation:sk}
-    },
+import translations from './resources';
 
-    interpolation: {
-      escapeValue: false,
-    }
-  });
+function convertToResouce(data){
+  let resources = {}
+  Object.keys(data).forEach((translation)=>{
+    let keys = Object.keys(data[translation]);
+    keys.forEach((key)=>{
+      if(! (key in resources) ){
+        resources[key] = {['translation']:{}};
+      }
+      resources[key]['translation'][translation] = data[translation][key];
+    })
+  })
+  return resources;
+}
+
+console.log(convertToResouce(translations));
+i18n
+.use(initReactI18next)
+.init({
+  fallbackLng: 'sk',
+  lng: 'sk',
+  resources: convertToResouce(translations),
+
+  interpolation: {
+    escapeValue: false,
+  }
+});
 export default i18n;
