@@ -1,13 +1,11 @@
 import {OPEN_DRAWER,CLOSE_DRAWER,CHANGE_MATERIAL,CHANGE_PLATFORM} from '../types';
-import {getSidebar} from './sidebarActions';
 //All of these are actions, they return redux triggered functions, that have no return, just manipulate with the store
 
 /**
  * Open the sidebar
  */
-export const openDrawer = (token) => {
+export const openDrawer = () => {
   return (dispatch) => {
-    getSidebar(token)(dispatch);
     dispatch({ type: OPEN_DRAWER });
   }
 };

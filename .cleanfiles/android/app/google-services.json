@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1016225963535",
+    "firebase_url": "https://lansystems-template-no-theme.firebaseio.com",
+    "project_id": "lansystems-template-no-theme",
+    "storage_bucket": "lansystems-template-no-theme.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016225963535:android:d84c6c4514dc63b3e6cd7a",
+        "android_client_info": {
+          "package_name": "com.mobile_helpdesk_firestore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016225963535-3cv9nk50rh9gj3u1454ounslaooslabs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVX9O-oSRm7wE-VbMCK_klJdT_BgdxI-Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016225963535-3cv9nk50rh9gj3u1454ounslaooslabs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

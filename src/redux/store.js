@@ -1,28 +1,10 @@
 import { applyMiddleware, combineReducers, compose, createStore } from 'redux';
 import ReduxThunk from 'redux-thunk';
 
-import loginReducer from './reducers/loginReducer';
-import drawerReducer from './reducers/drawerReducer';
-import taskReducer from './reducers/taskReducer';
-import commentReducer from './reducers/commentReducer';
-import companyReducer from './reducers/companyReducer';
-import itemReducer from './reducers/itemReducer';
-import userReducer from './reducers/userReducer';
-import sidebarReducer from './reducers/sidebarReducer';
-import subtaskReducer from './reducers/subtaskReducer';
+import allReducers from './reducers';
 
 //all reducers gathered together for the redux storage
-const reducers = combineReducers({
-  loginReducer,
-  drawerReducer,
-  taskReducer,
-  commentReducer,
-  companyReducer,
-  itemReducer,
-  userReducer,
-  sidebarReducer,
-  subtaskReducer,
-});
+const reducers = combineReducers(allReducers);
 
 //all enhancers gathered together for the redux storage
 const enhancers = compose(

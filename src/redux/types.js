@@ -1,18 +1,27 @@
 //collection of the all action types, used for better code consistency
-
-export const LOGIN_START = 'LOGIN_START';
-export const LOGIN_FAIL = 'LOGIN_FAIL';
-export const TOKEN_CHECKED = 'TOKEN_CHECKED';
-export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
-export const LOGIN_LOGOUT = 'LOGIN_LOGOUT';
-
-export const SET_SIDEBAR = 'SET_SIDEBAR';
-export const SET_SIDEBAR_LOADING = 'SET_SIDEBAR_LOADING';
-
 export const OPEN_DRAWER = 'OPEN_DRAWER';
 export const CLOSE_DRAWER = 'CLOSE_DRAWER';
 export const CHANGE_MATERIAL = 'CHANGE_MATERIAL';
 export const CHANGE_PLATFORM = 'CHANGE_PLATFORM';
+
+//LOGIN
+export const AUTOLOGIN_DONE = 'AUTOLOGIN_DONE';
+export const SET_USER_DATA = 'SET_USER_DATA';
+export const SET_USER_ID = 'SET_USER_ID';
+export const SET_USER_STATUSES = 'SET_USER_STATUSES';
+export const LOGIN_LOGOUT = 'LOGIN_LOGOUT';
+
+//STORAGE
+export const STORAGE_SET_HELP_FILTERS = 'STORAGE_SET_HELP_FILTERS';
+export const STORAGE_HELP_FILTERS_ACTIVE = 'STORAGE_HELP_FILTERS_ACTIVE';
+export const STORAGE_SET_HELP_PROJECTS = 'STORAGE_SET_HELP_PROJECTS';
+export const STORAGE_HELP_PROJECTS_ACTIVE = 'STORAGE_HELP_PROJECTS_ACTIVE';
+
+// POD TYMTO BORDER
+
+export const SET_SIDEBAR = 'SET_SIDEBAR';
+export const SET_SIDEBAR_LOADING = 'SET_SIDEBAR_LOADING';
+
 
 export const SET_USERS = 'SET_USERS';
 export const SET_LOADING_USERS = 'SET_LOADING_USERS';

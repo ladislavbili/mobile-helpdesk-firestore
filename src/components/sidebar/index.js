@@ -3,18 +3,27 @@ import Sidebar from './sidebar';
 import { connect } from 'react-redux';
 import { ActivityIndicator } from 'react-native';
 import { View, Text } from 'native-base';
-import { getSidebar, setSidebarLoading } from '../../redux/actions';
+import { storageHelpProjectsStart, storageHelpFiltersStart } from '../../redux/actions';
 
 class SidebarLoader extends Component {
   constructor(props){
     super(props);
-    this.props.setSidebarLoading(false);
-    this.props.getSidebar(this.props.token);
+    this.startStorage.bind(this);
+    this.startStorage();
+  }
+
+  startStorage(){
+    if(!this.props.projectsActive){
+      this.props.storageHelpProjectsStart();
+    }
+    if(!this.props.filtersActive){
+      this.props.storageHelpFiltersStart();
+    }
   }
 
   render(){
-    if(this.props.sidebarLoaded){
-      return <Sidebar {...this.props}/>;
+    if(this.props.projectsLoaded && this.props.filtersLoaded){
+      return <Sidebar/>;
     }
     else{
       return <ActivityIndicator
@@ -25,10 +34,13 @@ class SidebarLoader extends Component {
 }
 
 // All below is just redux storage
-const mapStateToProps = ({ sidebarReducer,loginReducer }) => {
-  const {token} = loginReducer;
-  const {sidebarLoaded} = sidebarReducer;
-  return {token,sidebarLoaded};
+const mapStateToProps = ({ storageHelpFilters, storageHelpProjects }) => {
+  const { filtersActive, filtersLoaded } = storageHelpFilters;
+  const { projectsActive, projectsLoaded } = storageHelpProjects;
+  return {
+    filtersActive, filtersLoaded,
+    projectsActive, projectsLoaded
+  };
 };
 
-export default connect(mapStateToProps, {getSidebar, setSidebarLoading})(SidebarLoader);
+export default connect(mapStateToProps, { storageHelpProjectsStart, storageHelpFiltersStart })(SidebarLoader);

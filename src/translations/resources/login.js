@@ -19,8 +19,8 @@ export default {
     en: 'Logout',
     sk: 'Odhlásiť',
   },
-  loginError : {
-    en: 'Login failed, invalid name or password',
-    sk: 'Prihlásenie zlyhalo, zlé meno alebo heslo',
+  incorrectCredentials : {
+    en: 'Login failed, e-mail or password is invalid!',
+    sk: 'Prihlásenie zlyhalo, e-mailová adresa alebo heslo je neplatné!',
   },
 };

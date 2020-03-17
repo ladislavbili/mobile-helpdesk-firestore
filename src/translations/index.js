@@ -16,7 +16,6 @@ function convertToResouce(data){
   return resources;
 }
 
-console.log(convertToResouce(translations));
 i18n
 .use(initReactI18next)
 .init({

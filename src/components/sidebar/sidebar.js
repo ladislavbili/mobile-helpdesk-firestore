@@ -12,7 +12,7 @@ import i18n from 'i18next';
  * Displays user a list of all projects and filters
  * @extends Component
  */
-class SideBar extends Component {
+class Sidebar extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -21,6 +21,18 @@ class SideBar extends Component {
     };
   }
   render() {
+    let filters = [{title:i18n.t('none'),id:'none'}].concat(this.props.filters.filter((filter)=>filter.createdBy===this.props.currentUser.id||filter.public||this.props.currentUser.userData.role === 3 ));
+    let projects = [{title:i18n.t('all'), id:'all'}].concat(
+      this.props.projects.filter((project)=>{
+        let curr = this.props.currentUser;
+        if((curr.userData && curr.userData.role.value===3)||(project.id===-1||project.id===null)){
+          return true;
+        }
+        let permission = project.permissions.find((permission)=>permission.user===curr.id);
+        return permission && permission.read;
+      })
+    );
+
     return (
       <Container>
         <Content
@@ -38,41 +50,27 @@ class SideBar extends Component {
             <Picker
               mode="dropdown"
               iosIcon={<Icon name="arrow-down" />}
-              placeholder="Select your SIM"
+              placeholder="Select your project"
               placeholderStyle={{ color: "#bfc6ea" }}
               placeholderIconColor="#007aff"
               style={{ width: undefined }}
-              selectedValue={this.state.selected}
-              onValueChange={()=>{}}
-            >
-              <Picker.Item label="Wallet" value="key0" />
-              <Picker.Item label="ATM Card" value="key1" />
-              <Picker.Item label="Debit Card" value="key2" />
-              <Picker.Item label="Credit Card" value="key3" />
-              <Picker.Item label="Net Banking" value="key4" />
-            </Picker>
-
-            {false && <Picker
-              supportedOrientations={['portrait', 'landscape']}
               selectedValue={this.state.project}
               onValueChange={(value)=>{
                 Actions.currentScene==='taskList'?
                   Actions.refresh({filterID:this.state.filter,projectID:value,order:this.props.generalOrder}):
                   Actions.taskList({filterID:this.state.filter,projectID:value,order:this.props.generalOrder});
                 this.setState({project:value});
-                this.props.closeDrawer()}}>
-              {[{title:i18n.t('all'), id:'all'}].concat(this.props.projects).map(
-                (project)=> <Item label={project.title} key={project.id} value={project.id} />
-            )}
-          </Picker>}
+                this.props.closeDrawer()}}
+            >
+            {
+              projects.map((project,index)=>
+                <Picker.Item label={project.title} value={project.id} />
+              )
+            }
+            </Picker>
         </View>
-        { false &&
-          <ListItem button noBorder >
-            <Text>{i18n.t('filters')}</Text>
-          </ListItem>
-          }
           <List
-            dataArray={[{title:i18n.t('none'),id:'none'}].concat(this.props.filters)} renderRow={data =>
+            dataArray={filters} renderRow={data =>
               <ListItem button noBorder onPress={() => {
                   Actions.currentScene==='taskList'?
                   Actions.refresh({filterID:data.id,projectID:this.state.project,order:this.props.generalOrder}):
@@ -80,7 +78,6 @@ class SideBar extends Component {
                   this.setState({filter:data.id});
                   this.props.closeDrawer()}} >
                 <Left>
-                  <Icon active name="ios-color-filter-outline" style={{ color: data.id===this.state.filter?'#3F51B5':'#777', fontSize: 26, width: 30 }} />
                   <Text style={styles.text}>{data.title}</Text>
                 </Left>
               </ListItem>
@@ -93,11 +90,11 @@ class SideBar extends Component {
 }
 
 //creates function that maps actions (functions) to the redux store
-const mapStateToProps = ({ sidebarReducer,taskReducer }) => {
-  const { sidebar } = sidebarReducer;
-  const {generalOrder} = taskReducer;
-  return { filters:sidebar.filters,projects:sidebar.projects.concat(sidebar.archived),generalOrder};
+const mapStateToProps = ({ storageHelpFilters, storageHelpProjects, loginReducer }) => {
+  const { filters } = storageHelpFilters;
+  const { projects } = storageHelpProjects;
+  return { filters, projects, currentUser:loginReducer };
 };
 
 //exports created Component connected to the redux store and redux actions
-export default connect(mapStateToProps, {closeDrawer})(SideBar);
+export default connect(mapStateToProps, {closeDrawer})(Sidebar);
