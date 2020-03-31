@@ -4,7 +4,7 @@ import { Footer, FooterTab, Container, Header, Title, Content, Button, Icon, Tex
 import { Actions } from 'react-native-router-flux';
 
 import i18n from 'i18next';
-import {logout} from '../../redux/actions';
+import {logout, removeListeners } from '../../redux/actions';
 
 /**
  * Shows user all of the settings available to him
@@ -27,7 +27,7 @@ class Settings extends Component {
           </Right>
         </Header>
         <Content>
-          { this.props.ACL.includes('user_settings') &&
+          { this.props.role > 0 &&
             <ListItem button onPress={Actions.userList} icon>
               <Left>
                 <Icon name="people" />
@@ -40,7 +40,7 @@ class Settings extends Component {
               </Right>
             </ListItem>
           }
-          { this.props.ACL.includes('company_settings') &&
+          { this.props.role > 0 &&
             <ListItem button onPress={Actions.companyList} icon>
               <Left>
                 <Icon name="home" />
@@ -64,31 +64,27 @@ class Settings extends Component {
               <Icon name="arrow-forward" />
             </Right>
           </ListItem>
-          <Button danger block onPress={()=>{this.props.logout();Actions.pop();Actions.pop();Actions.pop();}} iconLeft style={{ flexDirection: 'row', borderColor: 'white', margin:20, borderWidth: 0.5 }}>
+          <Button danger block onPress={()=>{Actions.taskList({type: 'replace'});this.props.removeListeners(); this.props.logout();}} iconLeft style={{ flexDirection: 'row', borderColor: 'white', margin:20, borderWidth: 0.5 }}>
             <Icon active style={{ color: 'white' }} name="power" />
             <Text style={{ color: 'white' }} >{i18n.t('logout')}</Text>
           </Button>
         </Content>
-        { (this.props.ACL.includes('user_settings') || this.props.ACL.includes('company_settings')) &&
-        <Footer>
-          { this.props.ACL.includes('user_settings') &&
+        { this.props.role > 0 &&
+          <Footer>
             <FooterTab>
               <Button onPress={Actions.userAdd} iconLeft style={{ flexDirection: 'row', borderColor: 'white', borderWidth: 0.5 }}>
                 <Icon active style={{ color: 'white' }} name="add" />
                 <Text style={{ color: 'white' }} >{i18n.t('user')}</Text>
               </Button>
             </FooterTab>
-          }
-          { this.props.ACL.includes('company_settings') &&
             <FooterTab>
               <Button onPress={Actions.companyAdd} iconLeft style={{ flexDirection: 'row', borderColor: 'white', borderWidth: 0.5 }}>
                 <Icon active style={{ color: 'white' }} name="add" />
                 <Text style={{ color: 'white' }} >{i18n.t('company')}</Text>
               </Button>
             </FooterTab>
-          }
-        </Footer>
-      }
+          </Footer>
+        }
       </Container>
     );
   }
@@ -96,9 +92,9 @@ class Settings extends Component {
 
 //creates function that maps actions (functions) to the redux store
 const mapStateToProps = ({ loginReducer }) => {
-  const {user} = loginReducer;
-  return {ACL:user.user_role.acl};
+  const { userData } = loginReducer;
+  return { role: userData.role.value };
 };
 
 //exports created Component connected to the redux store and redux actions
-export default connect(mapStateToProps,{logout})(Settings);
+export default connect(mapStateToProps,{ logout, removeListeners })(Settings);

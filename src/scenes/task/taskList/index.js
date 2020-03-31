@@ -6,7 +6,7 @@ import { Actions } from 'react-native-router-flux';
 import { ActivityIndicator } from 'react-native';
 
 import TaskList from './taskList';
-import { openDrawer, getTasks, setTasksLoading, getFilterTasks, setOpenedID, setGeneralOrder } from '../../../redux/actions';
+import { openDrawer, storageHelpProjectsStart, storageHelpTasksStart, storageUsersStart, storageHelpFiltersStart, storageHelpStatusesStart } from '../../../redux/actions';
 import i18n from 'i18next';
 
 /**
@@ -19,10 +19,59 @@ class TaskListLoader extends Component {
     this.state={
       tasksLoaded:false,
     }
+    this.startStorage.bind(this);
+    this.startStorage();
+    //porjects tasks users
   }
 
 
+  startStorage(){
+    if(!this.props.projectsActive){
+      this.props.storageHelpProjectsStart();
+    }
+    if(!this.props.tasksActive){
+      this.props.storageHelpTasksStart();
+    }
+    if(!this.props.usersActive){
+      this.props.storageUsersStart();
+    }
+    if(!this.props.filtersActive){
+      this.props.storageHelpFiltersStart();
+    }
+    if(!this.props.statusesActive){
+      this.props.storageHelpStatusesStart();
+    }
+  }
+
+  isLoaded(props){
+    return props.projectsLoaded &&
+    props.tasksLoaded &&
+    props.usersLoaded &&
+    props.filtersLoaded &&
+    props.statusesLoaded
+  }
+
   render() {
+    let listTitle = null;
+    if(this.props.filtersLoaded && this.props.filterID !== 'none'){
+      let filter = this.props.filters.find((filter)=>filter.id === this.props.filterID);
+      if(filter){
+        listTitle = filter.title;
+      }
+    }
+    if(this.props.projectsLoaded && this.props.projectID !== 'none'){
+      let project = this.props.projects.find((project)=>project.id === this.props.projectID);
+      if(project){
+        listTitle = project.title;
+      }
+    }
+    if(this.props.listTitle){
+      listTitle = i18n.t(this.props.listTitle);
+    }
+    if(listTitle === null){
+      listTitle = i18n.t('taskList');
+    }
+
     return (
       <Container>
         <Header>
@@ -32,7 +81,8 @@ class TaskListLoader extends Component {
             </Button>
           </Left>
           <Body>
-            <Title>{this.props.listName?this.props.listName:i18n.t('taskList')}</Title>
+            <Title>{listTitle}
+            </Title>
           </Body>
           <Right>
             <Button transparent style={{ marginTop: 8 }} onPress={Actions.taskAdd}>
@@ -50,11 +100,11 @@ class TaskListLoader extends Component {
           </Right>
         </Header>
         {
-          this.state.tasksLoaded &&
-          <TaskList />
+          this.isLoaded(this.props) &&
+          <TaskList forcedFilter={ this.props.forcedFilter } />
         }
         {
-          !this.state.tasksLoaded &&
+          !this.isLoaded(this.props) &&
           <ActivityIndicator
             animating size={ 'large' }
             color='#007299' />
@@ -65,10 +115,25 @@ class TaskListLoader extends Component {
 }
 
 //creates function that maps actions (functions) to the redux store
-const mapStateToProps = ({ drawerReducer }) => {
+const mapStateToProps = ({ drawerReducer, storageHelpProjects, storageHelpTasks, storageUsers, storageHelpFilters, storageHelpStatuses, filterReducer }) => {
   const { drawerState } = drawerReducer;
-  return { drawerState };
-};
+  const { filterID, projectID  } = filterReducer;
+
+  const { projectsActive, projectsLoaded, projects } = storageHelpProjects;
+  const { tasksActive, tasksLoaded } = storageHelpTasks;
+  const { usersActive, usersLoaded } = storageUsers;
+  const { filtersActive, filtersLoaded, filters } = storageHelpFilters;
+  const { statusesActive, statusesLoaded } = storageHelpStatuses;
+  return {
+    drawerState,
+    filterID, projectID,
+    projectsActive, projectsLoaded, projects,
+    tasksActive, tasksLoaded,
+    usersActive, usersLoaded,
+    filtersActive, filtersLoaded, filters,
+    statusesActive, statusesLoaded,
+   };
+}
 
 //exports created Component connected to the redux store and redux actions
-export default connect(mapStateToProps,{ openDrawer })(TaskListLoader);
+export default connect(mapStateToProps,{ openDrawer, storageHelpProjectsStart, storageHelpTasksStart, storageUsersStart, storageHelpFiltersStart, storageHelpStatusesStart })(TaskListLoader);

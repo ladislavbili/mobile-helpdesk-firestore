@@ -11,12 +11,12 @@ import SideBar from './components/sidebar';
 import Search from './components/search';
 
 import Settings from './scenes/settings';
-import UserList from './scenes/settings/userList';
-import UserAdd from './scenes/settings/userAdd';
-import UserEdit from './scenes/settings/userEdit';
-import CompanyList from './scenes/settings/companyList';
-import CompanyAdd from './scenes/settings/companyAdd';
-import CompanyEdit from './scenes/settings/companyEdit';
+import UserList from './scenes/settings/users/userList';
+import UserAdd from './scenes/settings/users/userAdd';
+import UserEdit from './scenes/settings/users/userEdit';
+import CompanyList from './scenes/settings/companies/companyList';
+import CompanyAdd from './scenes/settings/companies/companyAdd';
+import CompanyEdit from './scenes/settings/companies/companyEdit';
 import Account from './scenes/settings/account';
 
 import TaskList from './scenes/task/taskList';

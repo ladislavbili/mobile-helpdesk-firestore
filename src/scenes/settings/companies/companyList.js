@@ -1,23 +1,35 @@
 import {ActivityIndicator} from 'react-native';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {  Item, Footer, FooterTab, Container, Header, Title, Content, Button, Icon, Text, Left, Right, Body, List, ListItem, Input } from 'native-base';
+import { Input, Item, Footer, FooterTab, Container, Header, Title, Content, Button, Icon, Text, Left, Right, Body, List, ListItem } from 'native-base';
 import { Actions } from 'react-native-router-flux';
-
 import i18n from 'i18next';
-import {compactUserForSearch} from '../../../helperFunctions';
+import { storageCompaniesStart } from '../../../redux/actions';
 
 /**
- * Displays all of the users visible to the current user
- * @extends Component
- */
-class UserList extends Component {
+* Show list containing all of the available companies
+* @extends Component
+*/
+class CompanyList extends Component {
   constructor(props) {
     super(props);
     this.state={seached:''}
+    if(!this.props.companiesActive){
+      this.props.storageCompaniesStart();
+    }
   }
 
+
+
   render() {
+    if(!this.props.companiesLoaded){
+      return (
+        <ActivityIndicator
+          animating size={ 'large' }
+          color='#007299' />
+      )
+    }
+
     return (
       <Container>
         <Header>
@@ -27,7 +39,7 @@ class UserList extends Component {
             </Button>
           </Left>
           <Body>
-            <Title>{i18n.t('usersList')}</Title>
+            <Title>{i18n.t('companyList')}</Title>
           </Body>
         </Header>
         <Content>
@@ -37,24 +49,15 @@ class UserList extends Component {
               value={this.state.seached}
               onChangeText={((value)=>this.setState({seached:value}))} />
           </Item>
-
           <List
-            dataArray={
-              this.props.users.filter((user)=>
-              {
-                let filter=this.state.seached.toLowerCase();
-                return (compactUserForSearch(user).includes(filter));
-              })
-            }
-            renderRow={(user)=>
+            dataArray={this.props.companies.filter((company)=>company.title.toLowerCase().includes(this.state.seached.toLowerCase()))}
+            renderRow={(company)=>
               <ListItem
-                button onPress={()=>{Actions.userEdit({id:user.id})}}
+                button onPress={()=>Actions.companyEdit({company})}
                 >
                 <Body>
-                  {
-                    (user.name||user.surname)?<Text>{user.name?user.name+' ':''}{user.surname?user.surname:''}</Text>:null
-                  }
-                  <Text note>{user.email}</Text>
+                  <Text>{company.title}</Text>
+                  <Text note>{company.monthlyPausal ? i18n.t('contractual') : i18n.t('non_contractual') }</Text>
                 </Body>
                 <Right>
                   <Icon name="arrow-forward" />
@@ -65,9 +68,9 @@ class UserList extends Component {
         </Content>
         <Footer>
           <FooterTab>
-            <Button onPress={Actions.userAdd} iconLeft style={{ flexDirection: 'row', borderColor: 'white', borderWidth: 0.5 }}>
+            <Button onPress={Actions.companyAdd} iconLeft style={{ flexDirection: 'row', borderColor: 'white', borderWidth: 0.5 }}>
               <Icon active style={{ color: 'white' }} name="add" />
-              <Text style={{ color: 'white' }} >{i18n.t('user')}</Text>
+              <Text style={{ color: 'white' }} >{i18n.t('company')}</Text>
             </Button>
           </FooterTab>
         </Footer>
@@ -77,11 +80,10 @@ class UserList extends Component {
 }
 
 //creates function that maps actions (functions) to the redux store
-const mapStateToProps = ({ userReducer, loginReducer }) => {
-  const { users } = userReducer;
-  const { token } = loginReducer;
-  return { users, token };
+const mapStateToProps = ({ storageCompanies }) => {
+  const { companies, companiesLoaded, companiesActive } = storageCompanies;
+  return { companies, companiesLoaded, companiesActive };
 };
 
 //exports created Component connected to the redux store and redux actions
-export default connect(mapStateToProps, {})(UserList);
+export default connect(mapStateToProps, { storageCompaniesStart })(CompanyList);

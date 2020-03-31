@@ -4,10 +4,7 @@ import { Actions } from 'react-native-router-flux';
 import { connect } from 'react-redux';
 import { ActivityIndicator, Alert, BackHandler } from 'react-native';
 
-import TabAttributesLoader from './tabAttributesLoader';
-import TabCommentsLoader from './tabCommentsLoader';
-import TabItemsLoader from './tabItemsLoader';
-import TabSubtasksLoader from './tabSubtasksLoader';
+import TabDescriptionLoader from './tabDescriptionLoader';
 import i18n from 'i18next';
 
 /**
@@ -67,6 +64,7 @@ export default class TaskEdit extends Component {
 
 
   render() {
+    console.log('NOM');
     return (
       <Container>
         <Header>
@@ -79,25 +77,19 @@ export default class TaskEdit extends Component {
             <Title>{i18n.t('editTask')}</Title>
           </Body>
           {
-            this.state.canSave && this.state.changed && (<Right>
-              <Button transparent style={{borderColor: '#FFF', borderWidth: 1, borderRadius:0}} onPress={()=>this.state.saveFunction?this.state.saveFunction():()=>{}}>
+            this.state.canSave && this.state.changed && this.state.saveFunction && (<Right>
+              <Button transparent style={{borderColor: '#FFF', borderWidth: 1, borderRadius:0}} onPress={this.state.saveFunction}>
                 <Icon active style={{ color: 'white', padding:10 }} name="ios-checkmark-circle-outline" />
               </Button>
             </Right>)
           }
         </Header>
         <Tabs>
+          <Tab heading={i18n.t('description')}>
+            <TabDescriptionLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />
+          </Tab>
           <Tab heading={i18n.t('attributes')}>
-            <TabAttributesLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />
-          </Tab>
-          <Tab heading={i18n.t('comments')}>
-            <TabCommentsLoader id={this.props.id} />
-          </Tab>
-          <Tab heading={i18n.t('items')}>
-            <TabItemsLoader id={this.props.id} />
-          </Tab>
-          <Tab heading={i18n.t('subtasks')}>
-            <TabSubtasksLoader id={this.props.id} />
+            <TabDescriptionLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />
           </Tab>
         </Tabs>
       </Container>

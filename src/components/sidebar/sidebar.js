@@ -4,7 +4,7 @@ import { Title ,Header, Body, Content, Text, List, ListItem, Icon, Container, Le
 import { Actions } from 'react-native-router-flux';
 import { ActivityIndicator } from 'react-native';
 
-import { closeDrawer } from '../../redux/actions';
+import { closeDrawer, setProject, setFilter } from '../../redux/actions';
 import styles from './style';
 import i18n from 'i18next';
 
@@ -13,13 +13,7 @@ import i18n from 'i18next';
  * @extends Component
  */
 class Sidebar extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      project:'all',
-      filter:'none',
-    };
-  }
+
   render() {
     let filters = [{title:i18n.t('none'),id:'none'}].concat(this.props.filters.filter((filter)=>filter.createdBy===this.props.currentUser.id||filter.public||this.props.currentUser.userData.role === 3 ));
     let projects = [{title:i18n.t('all'), id:'all'}].concat(
@@ -54,29 +48,28 @@ class Sidebar extends Component {
               placeholderStyle={{ color: "#bfc6ea" }}
               placeholderIconColor="#007aff"
               style={{ width: undefined }}
-              selectedValue={this.state.project}
+              selectedValue={this.props.projectID}
               onValueChange={(value)=>{
-                Actions.currentScene==='taskList'?
-                  Actions.refresh({filterID:this.state.filter,projectID:value,order:this.props.generalOrder}):
-                  Actions.taskList({filterID:this.state.filter,projectID:value,order:this.props.generalOrder});
-                this.setState({project:value});
-                this.props.closeDrawer()}}
+                this.props.closeDrawer();
+                this.props.setProject(value);
+              }}
             >
             {
               projects.map((project,index)=>
-                <Picker.Item label={project.title} value={project.id} />
+                <Picker.Item label={project.title} value={project.id} key={project.id} />
               )
             }
             </Picker>
         </View>
           <List
-            dataArray={filters} renderRow={data =>
-              <ListItem button noBorder onPress={() => {
-                  Actions.currentScene==='taskList'?
-                  Actions.refresh({filterID:data.id,projectID:this.state.project,order:this.props.generalOrder}):
-                  Actions.taskList({filterID:data.id,projectID:this.state.project,order:this.props.generalOrder});
-                  this.setState({filter:data.id});
-                  this.props.closeDrawer()}} >
+            dataArray={filters}
+            renderRow={data =>
+              <ListItem button noBorder
+                onPress={() => {
+                  this.props.closeDrawer();
+                  this.props.setFilter(data.id);
+                }}
+                >
                 <Left>
                   <Text style={styles.text}>{data.title}</Text>
                 </Left>
@@ -90,11 +83,14 @@ class Sidebar extends Component {
 }
 
 //creates function that maps actions (functions) to the redux store
-const mapStateToProps = ({ storageHelpFilters, storageHelpProjects, loginReducer }) => {
+const mapStateToProps = ({ loginReducer, filterReducer, storageHelpFilters, storageHelpProjects }) => {
+  const currentUser = loginReducer;
+  const { projectID } = filterReducer;
+
   const { filters } = storageHelpFilters;
   const { projects } = storageHelpProjects;
-  return { filters, projects, currentUser:loginReducer };
+  return { currentUser, projectID, filters, projects };
 };
 
 //exports created Component connected to the redux store and redux actions
-export default connect(mapStateToProps, {closeDrawer})(Sidebar);
+export default connect(mapStateToProps, {closeDrawer, setProject, setFilter })(Sidebar);

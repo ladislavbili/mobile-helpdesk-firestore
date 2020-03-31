@@ -8,8 +8,8 @@ import DateTimePicker from 'react-native-modal-datetime-picker';
 import i18n from 'i18next';
 import {editTask,getTaskSolvers,deleteFollower,addFollower, removeFile, uploadFile} from '../../../redux/actions';
 import {formatDate,processInteger, initialiseCustomAttributes, importExistingCustomAttributesForTask, containsNullRequiredAttribute, processCustomAttributes} from '../../../helperFunctions';
-import TaskTag from './tag';
-import TaskFollower from './follower';
+import TaskTag from './oldTabs/tag';
+import TaskFollower from './oldTabs/follower';
 
 const workTypes=['vzdialena podpora','servis IT','servis serverov','programovanie www','instalacie klientskeho os','bug reklamacia','navrh','material','cenova ponuka','administrativa','konzultacia','refakturacia','testovanie'];
 

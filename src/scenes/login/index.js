@@ -6,7 +6,7 @@ import { View, Text } from 'native-base';
 import i18n from 'i18next';
 import firebase from 'react-native-firebase';
 
-import { setAutologinDone, setUserData, setUserFilterStatuses, setUserID, logout } from '../../redux/actions';
+import { setAutologinDone, setUserData, setUserFilterStatuses, setUserID, logout, addListener } from '../../redux/actions';
 
 let database = firebase.firestore();
 
@@ -19,15 +19,20 @@ class LoginChecker extends Component {
     firebase.auth().onAuthStateChanged((user) => {
       this.props.setAutologinDone();
       if(user!==null){
-        console.log('Logged in');
-        database.collection('users').doc(user.uid).get().then((response)=>{
+        let listener = database.collection('users').doc(user.uid).onSnapshot((response)=>{
           let userData = {...response.data(), id:user.uid };
+          if(userData.language === undefined){
+            userData.language = 'sk';
+          }
+          if(( this.props.userData === null ) || userData.language !== this.props.userData.language ){
+            i18n.changeLanguage(userData.language);
+          }
+          this.props.addListener(listener);
           this.props.setUserData(userData);
-          this.props.setUserFilterStatuses(userData.statuses)
+          this.props.setUserFilterStatuses(userData.statuses);
         })
         this.props.setUserID(user.uid);
       }else{
-        console.log('Logged out');
         this.props.logout();
       }
     });
@@ -50,8 +55,8 @@ class LoginChecker extends Component {
 
 // All below is just redux storage
 const mapStateToProps = ({ loginReducer }) => {
-  const {autologinDone} = loginReducer;
-  return {autologinDone};
+  const {autologinDone, userData} = loginReducer;
+  return {autologinDone, userData};
 };
 
 export default connect(mapStateToProps, {
@@ -60,5 +65,6 @@ export default connect(mapStateToProps, {
   setUserFilterStatuses,
   setUserID,
   logout,
+  addListener,
 
 })(LoginChecker);

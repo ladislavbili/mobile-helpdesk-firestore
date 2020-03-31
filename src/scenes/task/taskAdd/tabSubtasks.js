@@ -102,7 +102,6 @@ class TabSubtasks extends Component{
           {
             this.props.subtasks.map((item)=>
             <Card key={item.id}>
-              {console.log(item)}
               <CardItem>
                 <Left>
                   <Text note>{i18n.t('title')}</Text>

@@ -1,4 +1,4 @@
-import {STORAGE_SET_HELP_FILTERS, STORAGE_HELP_FILTERS_ACTIVE } from '../../types';
+import {STORAGE_SET_HELP_FILTERS, STORAGE_HELP_FILTERS_ACTIVE, ADD_LISTENER } from '../../types';
 import {snapshotToArray} from '../../../helperFunctions';
 import firebase from 'react-native-firebase';
 let database = firebase.firestore();
@@ -35,12 +35,13 @@ function fixOldFilterDates(filters){
 export const storageHelpFiltersStart = () => {
   return (dispatch) => {
 
-    database.collection('help-filters').onSnapshot(querySnapshot => {
-      //console.log(fixOldFilterDates(snapshotToArray(querySnapshot)).map((item)=>item.title + ' - ' + item.public + ' - ' + item.order));
+    let listener = database.collection('help-filters').onSnapshot(querySnapshot => {
       dispatch({ type: STORAGE_SET_HELP_FILTERS,filters:fixOldFilterDates(snapshotToArray(querySnapshot))});
       }, err => {
       console.log(`Encountered error: ${err}`);
     });
+
+    dispatch({ type: ADD_LISTENER, listener });
     dispatch({ type: STORAGE_HELP_FILTERS_ACTIVE });
   };
 };

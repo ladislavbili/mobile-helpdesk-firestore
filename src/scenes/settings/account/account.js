@@ -1,40 +1,39 @@
 
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Input, Item, Picker, Container, Header, Title, Content, Button, Icon, Text, Left, Right, Body, List, ListItem, View, CheckBox, Label } from 'native-base';
+import { Input, Item, Picker, Container, Header, Title, Content, Button, Icon, Text, Left, Right, Body, List, ListItem, View, CheckBox, Label, Textarea } from 'native-base';
+import { Alert } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import jwt_decode from 'jwt-decode';
 import i18n from 'i18next';
-import {logoutUser, editUser} from '../../../redux/actions';
-import {isEmail} from '../../../helperFunctions';
+import { logout, removeListeners } from '../../../redux/actions';
+import firebase from 'react-native-firebase';
+let database = firebase.firestore();
 
 const languages = [{ id: 'en', name: 'English' }, { id: 'sk', name: 'Slovensky' }];
 
-/**
- * Decodes current JWT Token and displays data about the current user, also allowing him to log out
- * @extends Component
- */
+//username, name, surname, recieve email notifications, Signature, language, reset password
+//napisat firmu a rolu email
 class Account extends Component {
   constructor(props) {
     super(props);
+
+    let user = this.props.currentUser.userData;
     this.state = {
-      is_active: this.props.user.is_active,
-      email:this.props.user.username,
-      user_role:this.props.user.user_role.title,
-      name:this.props.user.detailData.name?this.props.user.detailData.name:'',
-      surname:this.props.user.detailData.surname?this.props.user.detailData.surname:'',
-      password:'',
-      language:this.props.user.language?this.props.user.language:'sk',
-      func: this.props.user.detailData.function ? this.props.user.detailData.function : '',
-      mobile: this.props.user.detailData.mobile ? this.props.user.detailData.mobile : '',
-      tel: this.props.user.detailData.tel ? this.props.user.detailData.tel : '',
-      image:null,
-    };
+      username: user.username,
+      name: user.name,
+      surname: user.surname,
+      mailNotifications: user.mailNotifications,
+      signature: user.signature || `${user.name} ${user.surname}, ${ company ? company.title : '' }`,
+      language: user.language || 'sk', // set language async storage
+      passResetEnded: true,
+      passReseted: false,
+      };
     this.checkValues.bind(this);
     this.submit.bind(this);
   }
   checkValues(){
-    return isEmail(this.state.email) && (this.state.password.length > 7||this.state.password.length===0);
+    return true;
   }
 
   /**
@@ -42,33 +41,15 @@ class Account extends Component {
    */
   submit(){
     let body = {
-      username: this.state.email,
-      email: this.state.email,
+      username: this.state.username,
+      name: this.state.name,
+      surname: this.state.surname,
+      mailNotifications: this.state.mailNotifications,
+      signature: this.state.signature,
       language: this.state.language,
-      detail_data: {
-        name: this.state.name,
-        surname: this.state.surname,
-        'function': this.state.func,
-        mobile: this.state.mobile,
-        tel: this.state.tel
-      }
     };
-    if (this.state.password !== '') {
-      body['password'] = this.state.password;
-    }
-
-    this.props.editUser(
-      body,
-      this.props.user.company.id,
-      this.props.user.user_role.id,
-      this.props.user.id,
-      this.state.is_active,
-      this.state.image,
-      true,
-      this.props.token
-    );
-    Actions.pop();
-
+    database.collection('users').doc(this.props.currentUser.id).update(body);
+    //Actions.pop();
   }
 
   render() {
@@ -86,11 +67,36 @@ class Account extends Component {
         </Header>
         <Content style={{ padding: 15 }}>
 
-          <Text note>{i18n.t('email')}/{i18n.t('username')}</Text>
+          <Text note>{i18n.t('company')}</Text>
+          <View style={{ borderColor: 'white', borderWidth: 0.5, marginBottom: 5 }}>
+            <Input
+              value={this.props.companies.find((company)=>company.id === this.props.currentUser.userData.company ).title}
+              disabled={true}
+              />
+          </View>
+
+          <Text note>{i18n.t('role')}</Text>
+          <View style={{ borderColor: 'white', borderWidth: 0.5, marginBottom: 5 }}>
+            <Input
+              value={this.props.currentUser.userData.role.label}
+              disabled={true}
+              />
+          </View>
+
+          <Text note>{i18n.t('email')}</Text>
+          <View style={{ borderColor: 'white', borderWidth: 0.5, marginBottom: 5 }}>
+            <Input
+              value={this.props.currentUser.userData.email}
+              disabled={true}
+              />
+          </View>
+
+          <Text note>{i18n.t('username')}</Text>
           <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 5 }}>
             <Input
-              value={this.state.email}
-              disabled={true}
+              placeholder={i18n.t('enterUsername')}
+              value={this.state.username}
+              onChangeText={(value)=>this.setState({username:value})}
               />
           </View>
 
@@ -112,19 +118,6 @@ class Account extends Component {
               />
           </View>
 
-          <Text note>{i18n.t('password')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Input
-              secureTextEntry={true}
-              placeholder={i18n.t('enterNewPassword')}
-              value={this.state.password}
-              onChangeText={(value)=>this.setState({password:value})}
-              />
-            {
-              this.state.password.length<8  && this.state.password.length>0 && <Text note style={{color:'red'}}>{i18n.t('userPasswordError')}</Text>
-          }
-        </View>
-
         <Text note>{i18n.t('selectLanguage')}</Text>
         <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
           <Picker
@@ -132,55 +125,69 @@ class Account extends Component {
             selectedValue={this.state.language}
             onValueChange={(value)=>this.setState({language:value})}>
             {languages.map(
-              (lang)=> <Item label={lang.name} key={lang.id} value={lang.id} />
+              (lang)=> <Picker.Item label={lang.name} key={lang.id} value={lang.id} />
           )}
           </Picker>
         </View>
 
-        <Text note>{i18n.t('function')}</Text>
+        <Text note>{i18n.t('signature')}</Text>
         <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-          <Input
-            placeholder={i18n.t('enterFunction')}
-            value={this.state.func}
-            onChangeText={(value)=>this.setState({func:value})}
+          <Textarea
+            placeholder={i18n.t('enterSignature')}
+            rowSpan={3}
+            value={this.state.signature}
+            onChangeText={(value)=>this.setState({signature:value})}
             />
         </View>
 
-        <Text note>{i18n.t('mobile')}</Text>
-        <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-          <Input
-            placeholder={i18n.t('enterMobile')}
-            value={this.state.mobile}
-            keyboardType="numeric"
-            onChangeText={(value)=>this.setState({mobile:value})}
-            />
-        </View>
+        <Item
+          style={{ marginBottom:20, paddingBottom:15, paddingTop:5,   boxShadow:0 }}
+          inlineLabel
+          onPress={ () => {
+            this.setState({ mailNotifications: !this.state.mailNotifications });
+          }}>
+          <CheckBox
+            checked={this.state.mailNotifications}
+            color='#3F51B5'
+            onPress={ () => {
+              this.setState({ mailNotifications: !this.state.mailNotifications });
+            }}/>
+          <Label style={{marginLeft:15}}>{i18n.t('mailNotifications')}</Label>
+        </Item>
 
-        <Text note>{i18n.t('telephone')}</Text>
-        <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-          <Input
-            placeholder={i18n.t('enterTelephone')}
-            value={this.state.tel}
-            onChangeText={(value)=>this.setState({tel:value})}
-            keyboardType="numeric"
-            />
-        </View>
-
-          <Text note>{i18n.t('userRole')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 5 }}>
-            <Input
-              value={this.state.user_role}
-              disabled={true}
-              />
-          </View>
-
-          <Button primary block onPress={this.submit.bind(this)} disabled={!this.checkValues()}
-            style={{ flexDirection: 'row', borderColor: 'white', marginTop:5, marginBottom:20, borderWidth: 0.5 }}>
-            <Text style={{ color: 'white' }} >{i18n.t('change')}</Text>
-          </Button>
+        <Button primary block onPress={this.submit.bind(this)} disabled={!this.checkValues()}
+          style={{ flexDirection: 'row', borderColor: 'white', marginTop:5, marginBottom:20, borderWidth: 0.5 }}>
+          <Text style={{ color: 'white' }} >{i18n.t('change')}</Text>
+        </Button>
 
 
-          <Button danger block onPress={()=>{Actions.taskList();this.props.logoutUser();}}
+        <Button warning block onPress={()=>{
+          Alert.alert(
+            'Are you sure?',
+            'Do you want to recieve password change through e-mail?',
+            [
+              {
+                text: 'Cancel',
+                style: 'cancel',
+              },
+              {text: 'Reset password', onPress: () => {
+                this.setState({passReseted:true,passResetEnded:false})
+                firebase.auth().sendPasswordResetEmail(this.props.currentUser.userData.email).then(()=>{
+                  this.setState({passResetEnded:true})
+                })
+              }},
+            ],
+            {cancelable: true},
+          );
+          }}
+          disabled={this.state.passReseted}
+          style={{ flexDirection: 'row', borderColor: 'white', marginTop:5, marginBottom:20, borderWidth: 0.5 }}>
+          <Text style={{ color: 'white' }} >{this.state.passResetEnded?(this.state.passReseted?'Password reseted!':"Reset user's password"):"Resetting..."}</Text>
+        </Button>
+
+
+
+          <Button danger block onPress={()=>{Actions.taskList({type: 'replace'});this.props.removeListeners(); this.props.logout();}}
             iconLeft style={{ flexDirection: 'row', borderColor: 'white', marginTop:5, marginBottom:20, borderWidth: 0.5 }}>
             <Icon active style={{ color: 'white' }} name="power" />
             <Text style={{ color: 'white' }} >{i18n.t('logout')}</Text>
@@ -194,11 +201,11 @@ class Account extends Component {
 }
 
 //creates function that maps actions (functions) to the redux store
-const mapStateToProps = ({ userReducer, loginReducer }) => {
-  const { user} = userReducer;
-  const { token } = loginReducer;
-  return { user, token };
+const mapStateToProps = ({ loginReducer, storageCompanies }) => {
+  const currentUser = loginReducer;
+  const { companies } = storageCompanies;
+  return { currentUser, companies };
 };
 
 //exports created Component connected to the redux store and redux actions
-export default connect(mapStateToProps, {logoutUser, editUser})(Account);
+export default connect(mapStateToProps, { removeListeners })(Account);
