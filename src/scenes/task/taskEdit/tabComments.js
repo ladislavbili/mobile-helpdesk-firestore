@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { ActivityIndicator } from 'react-native';
-import TabDescription from './tabDescription';
+import TabComments from './tabComments';
 import { storageHelpTasksStart } from '../../../redux/actions';
 
 /**
  * Loads all of the data needed for user to seach for tasks
  * @extends Component
  */
-class TabDescriptionLoader extends Component {
+class TabCommentsLoader extends Component {
   constructor(props){
     super(props);
     this.startStorage.bind(this);
@@ -31,7 +31,7 @@ class TabDescriptionLoader extends Component {
       )
     }
     return (
-      <TabDescription saveFunction={this.props.saveFunction} inputChanged={this.props.inputChanged} id={this.props.id} />
+      <TabComments saveFunction={this.props.saveFunction} inputChanged={this.props.inputChanged} id={this.props.id} />
     );
   }
 }
@@ -43,4 +43,4 @@ const mapStateToProps = ({ storageHelpTasks }) => {
 };
 
 //exports created Component connected to the redux store and redux actions
-export default connect(mapStateToProps,{ storageHelpTasksStart })(TabDescriptionLoader);
+export default connect(mapStateToProps,{ storageHelpTasksStart })(TabCommentsLoader);

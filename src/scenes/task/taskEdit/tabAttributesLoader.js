@@ -2,37 +2,66 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { ActivityIndicator } from 'react-native';
 import TabAttributes from './tabAttributes';
-import {setTaskProjectsLoading,setTaskStatusesLoading,setTaskCompaniesLoading,setTaskTagsLoading,
-  deleteTaskSolvers,setUsersLoading,getTaskStatuses,getTaskProjects,getTaskCompanies,getTaskTags,getUsers, setTaskLoading, getTask,
-  setTaskAttributesLoading, getTaskAttributes} from '../../../redux/actions';
+import {
+  storageCompaniesStart,
+  storageHelpProjectsStart,
+  storageHelpStatusesStart,
+  storageHelpTagsStart,
+  storageHelpTaskTypesStart,
+  storageHelpTasksStart,
+  storageUsersStart,
+  storageHelpMilestonesStart,
+ } from '../../../redux/actions';
 
-/**
- * Loads all of the data needed for user to seach for tasks
- * @extends Component
- */
 class TabAttributesLoader extends Component {
   constructor(props){
     super(props);
-    this.props.setTaskProjectsLoading(false);
-    this.props.setTaskStatusesLoading(false);
-    this.props.setTaskCompaniesLoading(false);
-    this.props.setTaskTagsLoading(false);
-    this.props.setUsersLoading(false);
-    this.props.setTaskLoading(false);
-    this.props.setTaskAttributesLoading(false);
-
-    this.props.deleteTaskSolvers();
-    this.props.getTaskStatuses(null,this.props.token);
-    this.props.getTaskProjects(this.props.token);
-    this.props.getTaskCompanies(null,this.props.token);
-    this.props.getTaskTags(this.props.token);
-    this.props.getUsers(null,this.props.token);
-    this.props.getTask(this.props.id,this.props.token);
-    this.props.getTaskAttributes(this.props.token);
+    this.storageLoaded.bind(this);
+    this.startStorage.bind(this);
+    this.startStorage();
   }
+
+
+  startStorage(){
+    if(!this.props.companiesActive){
+      this.props.storageCompaniesStart();
+    }
+    if(!this.props.projectsActive){
+      this.props.storageHelpProjectsStart();
+    }
+    if(!this.props.statusesActive){
+      this.props.storageHelpStatusesStart();
+    }
+    if(!this.props.tagsActive){
+      this.props.storageHelpTagsStart();
+    }
+    if(!this.props.taskTypesActive){
+      this.props.storageHelpTaskTypesStart();
+    }
+    if(!this.props.tasksActive){
+      this.props.storageHelpTasksStart();
+    }
+    if(!this.props.usersActive){
+      this.props.storageUsersStart();
+    }
+    if(!this.props.milestonesActive){
+      this.props.storageHelpMilestonesStart();
+    }
+  }
+
+  storageLoaded(){
+    return this.props.companiesLoaded &&
+  this.props.projectsLoaded &&
+  this.props.statusesLoaded &&
+  this.props.tagsLoaded &&
+  this.props.taskTypesLoaded &&
+  this.props.tasksLoaded &&
+  this.props.usersLoaded &&
+  this.props.milestonesLoaded
+  }
+
   render() {
-    if(!this.props.usersLoaded||!this.props.statusesLoaded||!this.props.projectsLoaded||!this.props.companiesLoaded||!this.props.tagsLoaded||
-      !this.props.taskLoaded||!this.props.taskAttributesLoaded){
+    if(!this.storageLoaded()){
       return (
         <ActivityIndicator
         animating size={ 'large' }
@@ -40,22 +69,50 @@ class TabAttributesLoader extends Component {
       )
     }
     return (
-      <TabAttributes saveFunction={this.props.saveFunction} inputChanged={this.props.inputChanged}/>
+      <TabAttributes saveFunction={this.props.saveFunction} inputChanged={this.props.inputChanged} id={this.props.id} />
     );
   }
 }
 
 //creates function that maps actions (functions) to the redux store
-const mapStateToProps = ({loginReducer,userReducer, taskReducer}) => {
-  const {token} = loginReducer;
-  const {usersLoaded} = userReducer;
-  const {statusesUpdateDate, companiesUpdateDate, taskAttributesLoaded,
-    statusesLoaded,  projectsLoaded,  companiesLoaded,  tagsLoaded, taskLoaded } = taskReducer;
-  return {token, usersLoaded, statusesUpdateDate,statusesLoaded,  projectsLoaded,  companiesLoaded,  tagsLoaded,taskLoaded, companiesUpdateDate,
-    taskAttributesLoaded };
+const mapStateToProps = ({
+  storageCompanies,
+  storageHelpProjects,
+  storageHelpStatuses,
+  storageHelpTags,
+  storageHelpTaskTypes,
+  storageHelpTasks,
+  storageUsers,
+  storageHelpMilestones,
+   }) => {
+  const { companiesLoaded, companiesActive } = storageCompanies;
+  const { projectsLoaded, projectsActive } = storageHelpProjects;
+  const { statusesLoaded, statusesActive } = storageHelpStatuses;
+  const { tagsLoaded, tagsActive } = storageHelpTags;
+  const { taskTypesLoaded, taskTypesActive } = storageHelpTaskTypes;
+  const { tasksLoaded, tasksActive } = storageHelpTasks;
+  const { usersLoaded, usersActive } = storageUsers;
+  const { milestonesLoaded, milestonesActive } = storageHelpMilestones;
+  return {
+    companiesLoaded, companiesActive,
+    projectsLoaded, projectsActive,
+    statusesLoaded, statusesActive,
+    tagsLoaded, tagsActive,
+    taskTypesLoaded, taskTypesActive,
+    tasksLoaded, tasksActive,
+    usersLoaded, usersActive,
+    milestonesLoaded, milestonesActive,
+  };
 };
 
 //exports created Component connected to the redux store and redux actions
-export default connect(mapStateToProps,{setTaskProjectsLoading,setTaskStatusesLoading,setTaskCompaniesLoading,setTaskTagsLoading,
-  deleteTaskSolvers,setUsersLoading,getTaskStatuses,getTaskProjects,getTaskCompanies,getTaskTags,getUsers, setTaskLoading, getTask,
-  setTaskAttributesLoading, getTaskAttributes})(TabAttributesLoader);
+export default connect(mapStateToProps,{
+  storageCompaniesStart,
+  storageHelpProjectsStart,
+  storageHelpStatusesStart,
+  storageHelpTagsStart,
+  storageHelpTaskTypesStart,
+  storageHelpTasksStart,
+  storageUsersStart,
+  storageHelpMilestonesStart,
+ })(TabAttributesLoader);

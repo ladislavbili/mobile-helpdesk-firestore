@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { ActivityIndicator, Alert, BackHandler } from 'react-native';
 
 import TabDescriptionLoader from './tabDescriptionLoader';
+import TabAttributesLoader from './tabAttributesLoader';
 import i18n from 'i18next';
 
 /**
@@ -21,15 +22,15 @@ export default class TaskEdit extends Component {
   * Sets a default function for saving editted task that is used by a lower component (TabAtributes)
   * @param {function} func function that should be triggered when save button is pressed
   */
-  setFunction(func,canSave){
-    this.setState({saveFunction:func,canSave});
+  setFunction(func){
+    this.setState({saveFunction:func});
   }
 
 /**
  * Changes if the task needs to be saved
  */
-  inputChanged(changed){
-    this.setState({changed});
+  inputChanged(changed, canSave){
+    this.setState({changed, canSave});
   }
 
   /**
@@ -64,7 +65,6 @@ export default class TaskEdit extends Component {
 
 
   render() {
-    console.log('NOM');
     return (
       <Container>
         <Header>
@@ -89,7 +89,7 @@ export default class TaskEdit extends Component {
             <TabDescriptionLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />
           </Tab>
           <Tab heading={i18n.t('attributes')}>
-            <TabDescriptionLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />
+            <TabAttributesLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />
           </Tab>
         </Tabs>
       </Container>

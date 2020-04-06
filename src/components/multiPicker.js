@@ -21,13 +21,13 @@ export default class Multiselect extends Component {
     <View>
       <Text note>{this.props.title}</Text>
       <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-        <Button block onPress={()=>{this.setState({opened:true})}}><Text>{this.props.selectTitle}</Text></Button>
+        <Button block disabled={this.props.disabled} onPress={()=>{this.setState({opened:true})}}><Text>{this.props.selectTitle}</Text></Button>
         <List
           dataArray={this.state.selected}
           renderRow={item =>
             <ListItem key={item.id}>
-              <Body>
-                <Text>{item.title}</Text>
+              <Body style={ this.props.color ? { backgroundColor: item.color }:{} }>
+                <Text style={ this.props.color ? { fontWeight: "bold", color: 'white' }:{} }>{item[this.props.showAttribute]}</Text>
               </Body>
             </ListItem>
           }
@@ -55,7 +55,7 @@ export default class Multiselect extends Component {
               </Item>
             </ListItem>
             <List>
-              {this.props.options.filter((item)=>item.title.toLowerCase().includes(this.state.search.toLowerCase())).map((item)=>
+              {this.props.options.filter((item)=>item[this.props.showAttribute].toLowerCase().includes(this.state.search.toLowerCase())).map((item)=>
                 <ListItem thumbnail key={item.id} onPress={()=>{
                     if(this.state.selected.some((selected)=>selected.id===item.id)){
                       let newSelected=[...this.state.selected];
@@ -80,7 +80,7 @@ export default class Multiselect extends Component {
                         }}} />
                     </Left>
                     <Body>
-                      <Text>{item.title}</Text>
+                      <Text>{item[this.props.showAttribute]}</Text>
                     </Body>
                   </ListItem>
                 )}
