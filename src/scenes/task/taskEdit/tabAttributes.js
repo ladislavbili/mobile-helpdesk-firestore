@@ -106,6 +106,17 @@ class TabAtributes extends Component {
 		database.collection('help-task_history').add(entry);
 	}
 
+	getPermissions(id){
+		let permission = null;
+		if(this.state.project){
+			permission = this.state.project.permissions.find((permission)=>permission.user===id);
+		}
+		if(permission===undefined){
+			permission = {user:{id},read:false,write:false,delete:false,internal:false,isAdmin:false};
+		}
+		return permission;
+	}
+
 	addNotification(originalEvent,internal){
 		let event = {
 			...originalEvent,
