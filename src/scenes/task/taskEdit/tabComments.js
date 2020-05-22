@@ -42,7 +42,6 @@ class TabComments extends Component {
 
       <Footer>
         <FooterTab>
-          {console.log(this.props.updateComments)}
           <Button onPress={()=>{Actions.commentAdd({id:this.props.id, updateComments:this.props.updateComments})}} iconLeft style={{ flexDirection: 'row', borderColor: 'white', borderWidth: 0.5 }}>
             <Icon active style={{ color: 'white' }} name="md-add" />
             <Text style={{ color: 'white' }} >{i18n.t('comment')}</Text>

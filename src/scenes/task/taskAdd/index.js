@@ -3,60 +3,130 @@ import { Tab, Tabs, Container, Header, Title, Button, Icon, Left, Right, Body} f
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'react-redux';
 import { ActivityIndicator } from 'react-native';
+import AddTabs from './addTabs';
+import {
+  storageCompaniesStart,
+  storageHelpProjectsStart,
+  storageHelpStatusesStart,
+  storageHelpTagsStart,
+  storageHelpTaskTypesStart,
+  storageHelpTasksStart,
+  storageUsersStart,
+  storageHelpMilestonesStart,
+  storageMetadataStart,
+ } from '../../../redux/actions';
 
-import TabAttributesLoader from './tabAttributesLoader';
-import TabItemsLoader from './tabItemsLoader';
-import TabSubtasks from './tabSubtasks';
 import i18n from 'i18next';
 
 /**
-* Loads all of the data required to add a new task
-* @extends Component
-*/
-export default class TaskAdd extends Component {
+ * This component creates a main menu for the task editting
+ * @extends Component
+ */
+class TaskAddLoader extends Component {
   constructor(props){
     super(props);
-    this.state={saveFunction:null}
+    this.startStorage.bind(this);
+    this.startStorage();
   }
 
-  /**
-  * Sets a default function for adding task that is used by a lower component (TabAtributes)
-  * @param {function} func function that should be triggered when save button is pressed
-  */
-  setFunction(func){
-    this.setState({saveFunction:func});
+  startStorage(){
+    if(!this.props.companiesActive){
+      this.props.storageCompaniesStart();
+    }
+    if(!this.props.projectsActive){
+      this.props.storageHelpProjectsStart();
+    }
+    if(!this.props.statusesActive){
+      this.props.storageHelpStatusesStart();
+    }
+    if(!this.props.tagsActive){
+      this.props.storageHelpTagsStart();
+    }
+    if(!this.props.taskTypesActive){
+      this.props.storageHelpTaskTypesStart();
+    }
+    if(!this.props.tasksActive){
+      this.props.storageHelpTasksStart();
+    }
+    if(!this.props.usersActive){
+      this.props.storageUsersStart();
+    }
+    if(!this.props.milestonesActive){
+      this.props.storageHelpMilestonesStart();
+    }
+    if(!this.props.metadataActive){
+      this.props.storageMetadataStart();
+    }
+  }
+
+  storageLoaded(){
+    return this.props.companiesLoaded &&
+    this.props.projectsLoaded &&
+    this.props.statusesLoaded &&
+    this.props.tagsLoaded &&
+    this.props.taskTypesLoaded &&
+    this.props.tasksLoaded &&
+    this.props.usersLoaded &&
+    this.props.milestonesLoaded &&
+    this.props.metadataLoaded
   }
 
   render() {
+    if(!this.storageLoaded()){
+      return (
+        <ActivityIndicator
+        animating size={ 'large' }
+        color='#007299' />
+      )
+    }
     return (
-      <Container>
-        <Header>
-          <Left>
-            <Button transparent onPress={() => Actions.pop()}>
-              <Icon name="arrow-back" />
-            </Button>
-          </Left>
-          <Body>
-            <Title>{i18n.t('addTask')}</Title>
-          </Body>
-          <Right>
-            <Button transparent onPress={()=>this.state.saveFunction?this.state.saveFunction():()=>{}}>
-              <Icon active style={{ color: 'white', padding:10 }} name="ios-checkmark-circle-outline" />
-            </Button>
-          </Right>
-        </Header>
-        <Tabs>
-          <Tab heading={i18n.t('attributes')}>
-            <TabAttributesLoader saveFunction={this.setFunction.bind(this)} />
-          </Tab>
-          <Tab heading={i18n.t('items')}>
-            <TabItemsLoader />
-          </Tab>
-          <Tab heading={i18n.t('subtasks')}>
-            <TabSubtasks />
-          </Tab>
-        </Tabs>
-      </Container>
+      <AddTabs />
     );
   }
 }
+
+const mapStateToProps = ({
+  storageCompanies,
+  storageHelpProjects,
+  storageHelpStatuses,
+  storageHelpTags,
+  storageHelpTaskTypes,
+  storageHelpTasks,
+  storageUsers,
+  storageHelpMilestones,
+  storageMetadata,
+   }) => {
+  const { companiesLoaded, companiesActive } = storageCompanies;
+  const { projectsLoaded, projectsActive } = storageHelpProjects;
+  const { statusesLoaded, statusesActive } = storageHelpStatuses;
+  const { tagsLoaded, tagsActive } = storageHelpTags;
+  const { taskTypesLoaded, taskTypesActive } = storageHelpTaskTypes;
+  const { tasksLoaded, tasksActive } = storageHelpTasks;
+  const { usersLoaded, usersActive } = storageUsers;
+  const { milestonesLoaded, milestonesActive } = storageHelpMilestones;
+	const { metadataLoaded, metadataActive } = storageMetadata;
+  return {
+    companiesLoaded, companiesActive,
+    projectsLoaded, projectsActive,
+    statusesLoaded, statusesActive,
+    tagsLoaded, tagsActive,
+    taskTypesLoaded, taskTypesActive,
+    tasksLoaded, tasksActive,
+    usersLoaded, usersActive,
+    milestonesLoaded, milestonesActive,
+    metadataLoaded, metadataActive
+  };
+};
+
+//exports created Component connected to the redux store and redux actions
+export default connect(mapStateToProps,{
+  storageCompaniesStart,
+  storageHelpProjectsStart,
+  storageHelpStatusesStart,
+  storageHelpTagsStart,
+  storageHelpTaskTypesStart,
+  storageHelpTasksStart,
+  storageUsersStart,
+  storageHelpMilestonesStart,
+  storageMetadataStart
+})(TaskAddLoader);

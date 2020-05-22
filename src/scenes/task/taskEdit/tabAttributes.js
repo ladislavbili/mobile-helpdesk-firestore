@@ -35,7 +35,10 @@ class TabAtributes extends Component {
 	constructor(props) {
 		super(props);
 		let task = this.props.tasks.find((task)=>task.id === this.props.id);
-
+		let company = this.props.companies.find((item)=>item.id===task.company);
+		if(company === undefined){
+			company = this.props.companies[0];
+		}
 		let project = this.props.projects.find((project)=>project.id === task.project);
 		let status = this.props.statuses.find((item)=>item.id===task.status);
 		let permission = project.permissions.find((permission)=>permission.user===this.props.currentUser.id);
@@ -51,7 +54,7 @@ class TabAtributes extends Component {
 
 			assignedTo: this.props.users.filter((user)=>task.assignedTo.some((userID)=>user.id === userID)),
 			requester: this.props.users.find((user)=>task.requester === user.id),
-			company: this.props.companies.find((item)=>item.id===task.company),
+			company,
 
 			deadline: task.deadline,
 			deadlineOpen: false,
@@ -412,7 +415,7 @@ class TabAtributes extends Component {
 	              supportedOrientations={['portrait', 'landscape']}
 	              iosHeader={i18n.t('selectOne')}
 	              mode="dropdown"
-	              selectedValue={this.state.company.id}
+	              selectedValue={this.state.company ? this.state.company.id : null}
 	              onValueChange={(value)=>{
 									let company = this.props.companies.find((company)=> company.id === value)
 									if(this.state.defaultFields.pausal.fixed){

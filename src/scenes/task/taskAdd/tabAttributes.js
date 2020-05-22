@@ -1,216 +1,65 @@
 import React, { Component } from 'react';
-import { Modal } from 'react-native';
+import { Modal, Linking } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'react-redux';
 import { View, Body, Container, Content, Icon, Input, Item, Label, Text, Footer, FooterTab, Button, Picker,  ListItem, Header,Title , Left, Right, List , CheckBox } from 'native-base';
-import MultiPicker from '../../../components/multiPicker';
 import DateTimePicker from 'react-native-modal-datetime-picker';
+import MultiPicker from '../../../components/multiPicker';
+import InputError from '../../../components/inputError'
 import i18n from 'i18next';
-import {addTask,getTaskSolvers, removeFile, uploadFile} from '../../../redux/actions';
-import {formatDate,processInteger, initialiseCustomAttributes,containsNullRequiredAttribute, processCustomAttributes} from '../../../helperFunctions';
-import TaskTag from './tag';
-import TaskFollower from './follower';
-const workTypes=['vzdialena podpora','servis IT','servis serverov','programovanie www','instalacie klientskeho os','bug reklamacia','navrh','material','cenova ponuka','administrativa','konzultacia','refakturacia','testovanie'];
+import {  } from '../../../redux/actions';
+import { formatDate,processInteger } from '../../../helperFunctions';
+import firebase from 'react-native-firebase';
+let database = firebase.firestore();
+
+const booleanSelects = [{value:false,label:'No'},{value:true,label:'Yes'}];
+
+
+const noDef={
+	status:{def:false, fixed:false, value: null, show: true },
+	tags:{def:false, fixed:false, value: [], show: true },
+	assignedTo:{def:false, fixed:false, value: [], show: true },
+	type:{def:false, fixed:false, value: null, show: true },
+	requester:{def:false, fixed:false, value: null, show: true },
+	company:{def:false, fixed:false, value: null, show: true },
+	pausal:{def:false, fixed:false, value: booleanSelects[0], show: true },
+	overtime:{def:false, fixed:false, value: booleanSelects[0], show: true },
+}
+
+const noMilestone = {id:null,value:null,title:'None',label:'None',startsAt:null, endsAt: null};
 
 /**
- * Tab of the main menu that is responsible for adding a new task
- * @extends Component
- */
+* Tab of the main menu that is responsible for adding a new task
+* @extends Component
+*/
 class TabAtributes extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      important:false,
-      title:'',
-      tag:[],
-      tagOpen:false,
-      description:'',
-      descriptionHeight:100,
-      status:this.props.statuses[0],
-      statusOpen:false,
-      project:this.props.projects.length===0?'null':this.props.projects[0].id,
-      requestedBy:this.props.users[this.props.users.findIndex((user)=>user.id===this.props.user.id)],
-      requestedByOpen:false,
-      requestedByFilter:'',
-      company:this.props.companies.length===0?'null':this.props.companies[0],
-      companyOpen:false,
-      companyFilter:'',
-      assigned:{id:null,name:i18n.t('noUser')},
-      assignedOpen:false,
-      assignedFilter:'',
-      workType:'vzdialena podpora',
-      workTime:'0',
-      startedAt:null,
-      startedAtOpen:false,
-      deadline:null,
-      deadlineOpen:false,
-      followers:[],
-      followersFilter:'',
-      followersOpen:false,
-      submitError:false,
-      task_data:initialiseCustomAttributes(this.props.taskAttributes),
-    }
-    this.props.getTaskSolvers(this.state.project,this.props.token);
-    this.props.saveFunction(this.submitForm.bind(this));
-  }
-
-/**
- * this function is used by each separate tag to add and remove itself from the tag list
- * @param {boolean} removing If the item is meant to be removed
- * @param {Tag} tag    Object containing all of the data about the tag
- */
-  setTag(removing,tag){
-    if(removing){
-      let index=this.state.tag.findIndex((item)=>item.id==tag.id);
-      if(index==-1){
-        return;
-      }
-      let newTags=[...this.state.tag];
-      newTags.splice(index,1);
-      this.setState({tag:newTags});
-    }
-    else{
-      let index=this.state.tag.findIndex((item)=>item.id==tag.id);
-      if(index==-1){
-        this.setState({tag:[...this.state.tag,tag]});
-      }
-    }
-  }
-
-  /**
-   * this function is used by each separate follower to add and remove itself from the follower list
-   * @param {boolean} removing If the item is meant to be removed
-   * @param {Follower} follower    Object containing all of the data about the follower
-   */
-    setFollower(removing,follower){
-      if(removing){
-        let index=this.state.followers.findIndex((item)=>item.id==follower.id);
-        if(index==-1){
-          return;
-        }
-        let newFollowers=[...this.state.followers];
-        newFollowers.splice(index,1);
-        this.setState({followers:newFollowers});
-      }
-      else{
-        let index=this.state.followers.findIndex((item)=>item.id==follower.id);
-        if(index==-1){
-          this.setState({followers:[...this.state.followers,follower]});
-        }
-      }
-    }
-
-  /**
-   * Gathers all of the data from the current state and sends them via actions to the redux. Then it returns user back to previous component
-   */
-  submitForm(){
-    this.setState({ submitError: true });
-		//checks if all requirements for creating were met
-		if (
-			this.state.title === '' ||
-			this.state.project === 'null' ||
-			this.state.company === 'null' ||
-      containsNullRequiredAttribute(processCustomAttributes(this.state.task_data,this.props.taskAttributes),[...this.props.taskAttributes])
-		) {
-			return;
+	constructor(props) {
+		super(props);
+		this.state = {
+			statusOpened:false,
+			deadlineOpen: false,
 		}
-		//as a tags we send titles not ids
-		let tags = [];
-		this.state.tag.map(addTag => tags.push(this.props.tags.find(tag => tag.id === addTag.id).title));
-    let closedAt = (new Date()).getTime()/1000;
-    let fullStatus=this.props.statuses.find((item)=>item.id.toString()===this.state.status.id.toString());
-    if(fullStatus.title!=='Closed'||!fullStatus.default){
-      closedAt = 'null';
-    }
+	}
 
-		this.props.addTask(
-			{
-				title: this.state.title,
-				closedAt,
-				description: this.state.description === '' ? 'null' : this.state.description,
-				deadline: this.state.deadline !== null ? this.state.deadline.valueOf() / 1000 : 'null',
-				startedAt: this.state.startedAt !== null ? this.state.startedAt.valueOf() / 1000 : 'null',
-				important: this.state.important,
-				workType: this.state.workType,
-				workTime: this.state.workTime.length === 0 ? undefined : this.state.workTime,
-				tag: JSON.stringify(tags),
-				assigned: this.state.assigned.id !== null ? JSON.stringify([{ userId: parseInt(this.state.assigned.id) }]) : null,
-        taskData: JSON.stringify(processCustomAttributes({...this.state.task_data},[...this.props.taskAttributes])),
-        attachment:
-					this.props.attachments.length === 0
-          ? undefined
-						: JSON.stringify(this.props.attachments.map(attachment => attachment.id)),
-			},
-			this.state.followers,
-			this.state.project,
-			this.state.status.id,
-			this.state.requestedBy.id,
-			this.state.company.id,
-      this.props.items,
-      this.props.subtasks,
-			this.props.token
-		);
-    Actions.pop();
-  }
   render() {
-    let statusButtonStyle={backgroundColor:this.state.status.color,flex:1};
+		const data = this.props.data;
+		const setData = this.props.setData;
+    const statusButtonStyle= { backgroundColor: data.status.color, flex:1 };
+		const project = this.props.projects.find((project) => project.id === data.project);
+		const usersWithPermissions = this.props.users.filter((user)=>project && project.permissions && project.permissions.some((permission)=>permission.user===user.id));
+		const requesters =  (project && project.lockedRequester ? usersWithPermissions : this.props.users);
+
+
+    let currentMilestones = this.props.milestones.filter((milestone)=>milestone.id===null || (data.project !== null && milestone.project===data.project))
+    currentMilestones = [noMilestone,...currentMilestones];
     return (
       <Container>
         <Content style={{ padding: 15 }}>
 
-          <Item inlineLabel style={{marginBottom:20, borderBottomWidth:0,marginTop:10,paddingBottom:5}} onPress={()=>this.setState({important:!this.state.important})}>
-            <CheckBox checked={this.state.important} color='#3F51B5' onPress={()=>this.setState({important:!this.state.important})}/>
+          <Item inlineLabel style={{marginBottom:20, borderBottomWidth:0,marginTop:10,paddingBottom:5}} onPress={()=>setData({important:!data.important})}>
+            <CheckBox checked={data.important} color='#3F51B5' onPress={()=>{setData({important:!data.important})}}/>
             <Label style={{marginLeft:15}}>{i18n.t('important')}</Label>
           </Item>
-
-          <Text note>{i18n.t('taskName')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Input
-              placeholder={i18n.t('enterTaskName')}
-              value={ this.state.title }
-              onChangeText={ value => this.setState({title:value}) }
-              />
-            {this.state.submitError && this.state.title==='' && <Text style={{color:'red'}}>{i18n.t('restrictionMustEnterTaskTitle')}</Text>}
-          </View>
-
-          <Text note>{i18n.t('tags')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Button block onPress={()=>{this.setState({tagOpen:true})}}><Text>{i18n.t('selectTags')}</Text></Button>
-            <List
-              dataArray={this.state.tag}
-              renderRow={tag =>
-                <ListItem>
-                  <View style={{backgroundColor:((tag.color.includes('#')?'':'#')+tag.color),paddingLeft:10}}>
-                    <Text style={{color:'white'}}>{tag.title}</Text>
-                  </View>
-                </ListItem>
-              }
-              />
-          </View>
-
-          <Text note>{i18n.t('taskDescription')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Input
-              style={{height:Math.max(35, this.state.descriptionHeight)}}
-              multiline={true}
-              onChange={ event => this.setState({description:event.nativeEvent.text}) }
-              onContentSizeChange={(event) => this.setState({ descriptionHeight: event.nativeEvent.contentSize.height })}
-              value={ this.state.description }
-              placeholder={i18n.t('enterTaskDescription')}
-              />
-          </View>
-
-          <Text note>{i18n.t('status')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Button style={statusButtonStyle} onPress={()=>this.setState({statusOpened:!this.state.statusOpened})}><Text style={{color:'white',flex:1,textAlign:'center'}}>{this.state.status.title}</Text></Button>
-            {
-              this.state.statusOpened && this.props.statuses.map((status)=>
-              !(this.state.status.id===status.id) &&
-              <Button style={{backgroundColor:status.color,flex:1}} onPress={()=>this.setState({status:status,statusOpened:false})} key={status.id} >
-                <Text style={{color:'white',flex:1,textAlign:'center'}}>{status.title}</Text>
-              </Button>)
-            }
-          </View>
 
           <Text note>{i18n.t('project')}</Text>
           <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
@@ -218,520 +67,284 @@ class TabAtributes extends Component {
               supportedOrientations={['portrait', 'landscape']}
               iosHeader={i18n.t('selectOne')}
               mode="dropdown"
-              selectedValue={this.state.project}
-              onValueChange={(value)=>{this.setState({project : value,assigned:{id:null,name:i18n.t('noUser')}});this.props.getTaskSolvers(value,this.props.token);}}>
+              selectedValue={data.project}
+              onValueChange={(projectID)=>{
+								let project  = this.props.projects.find((project)=> project.id === projectID)
+								let permissionIDs = (project.permissions && project.permissions.map((permission) => permission.user)) || [];
+								let assignedTo=data.assignedTo.filter((user)=>permissionIDs.includes(user.id));
+
+								setData({
+									project: projectID,
+									assignedTo,
+									milestone: noMilestone,
+								});
+							}}>
               {
                 this.props.projects.map((project)=>
-                (<Item label={project.title?project.title:''} key={project.id} value={project.id} />)
-              )
+                (<Item label={project.title?project.title:''} key={project.id} value={project.id} />))
+              }
+            </Picker>
+						<InputError
+							show = {data.project === null}
+							message = "restrictionMustSelectTaskProject"
+							/>
+          </View>
+
+          { data.defaults.status.show && <Text note>{i18n.t('status')}</Text>}
+          { data.defaults.status.show &&
+						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
+            <Button style={statusButtonStyle} disabled={data.defaults.status.fixed} onPress={()=>this.setState({statusOpened:!this.state.statusOpened})}><Text style={{color:'white',flex:1,textAlign:'center'}}>{data.status.title}</Text></Button>
+            {
+              this.state.statusOpened && !(data.defaults.status.fixed) && this.props.statuses.map((status)=>
+              !(data.status.id===status.id) &&
+              <Button style={{backgroundColor:status.color,flex:1}}
+								disabled={data.defaults.status.fixed}
+                onPress={()=>{
+                  if(status.action==='pending'){
+                    let pendingDate = new Date();
+                    if(data.milestone === null || data.milestone.endsAt === null){
+                      pendingDate.setDate( pendingDate.getDate() + 1);
+                    }else{
+                      pendingDate = new Date(data.milestone.endsAt);
+                    }
+										pendingDate = pendingDate.getTime();
+                    setData({
+                      status,
+                      pendingDate,
+                      pendingChangable: true,
+                    })
+										this.setState({statusOpened: false})
+                  }else if(status.action==='close'||status.action==='invalid'){
+                    setData({
+                      status,
+                      important:false,
+                      closeDate: (new Date().getTime()),
+                    })
+										this.setState({statusOpened: false})
+                  }
+                  else{
+                    setData({
+                      status,
+                    })
+										this.setState({statusOpened: false})
+                  }
+              }}
+                key={status.id} >
+                <Text style={{color:'white',flex:1,textAlign:'center'}}>{status.title}</Text>
+              </Button>)
             }
-          </Picker>
-          {this.state.submitError && this.state.project==='null' && <Text style={{color:'red'}}>{i18n.t('restrictionMustSelectTaskProject')}</Text>}
-        </View>
-
-        <Text note>{i18n.t('requester')}</Text>
-        <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-          <Button block style={{backgroundColor:'white'}} onPress={()=>this.setState({requestedByOpen:true})}>
-            <Left>
-              <Text style={{textAlign:'left',color:'black'}}>{
-                  (this.state.requestedBy.name)?<Text>
-                  {this.state.requestedBy.name}</Text>:
-                  <Text>{this.state.requestedBy.email}</Text>}</Text>
-              </Left>
-            </Button>
           </View>
+					}
 
-          <Text note>{i18n.t('company')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Button block style={{backgroundColor:'white'}} onPress={()=>this.setState({companyOpen:true})}>
-              <Left>
-                <Text style={{textAlign:'left',color:'black'}}>{this.state.company==null ? i18n.t('selectCompany') : this.state.company.title}</Text>
-              </Left>
-            </Button>
-            {this.state.submitError && this.state.company==='null' && <Text style={{color:'red'}}>{i18n.t('restrictionMustSelectTaskCompany')}</Text>}
-          </View>
+          { data.defaults.type.show && <Text note>{i18n.t('type')}</Text>}
+          { data.defaults.type.show &&
+						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
+	            <Picker
+	              supportedOrientations={['portrait', 'landscape']}
+	              iosHeader={i18n.t('selectOne')}
+								enabled={!(data.defaults.type.fixed)}
+	              mode="dropdown"
+	              selectedValue={data.type}
+	              onValueChange={(value)=>{
+									setData({type:value})
+								}}
+								>
+	              {
+	                this.props.taskTypes.map((type)=>
+	                (<Item label={type.title?type.title:''} key={type.id} value={type.id} />))
+	              }
+	            </Picker>
+							<InputError
+								show = {data.type === null}
+								message = "restrictionMustSelectTaskType"
+								/>
+          	</View>
+					}
 
-          <Text note>{i18n.t('assigned')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Button block style={{backgroundColor:'white'}} onPress={()=>this.setState({assignedOpen:true})}>
-              <Left>
-                <Text style={{textAlign:'left',color:'black'}}>{this.state.assigned==null ? i18n.t('selectAssignedTo') : (
-                    this.state.assigned.name||this.state.assigned.surname?
-                    <Text>{this.state.assigned.name?this.state.assigned.name:''+' '+this.state.assigned.surname?this.state.assigned.surname:''}</Text>:
-                      <Text>{this.state.assigned.username}</Text>
-
-                    )}</Text>
-                  </Left>
-                </Button>
-              </View>
-
-          <Text note>{i18n.t('taskWork')}</Text>
+          <Text note>{i18n.t('milestone')}</Text>
           <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
             <Picker
               supportedOrientations={['portrait', 'landscape']}
               iosHeader={i18n.t('selectOne')}
               mode="dropdown"
-              selectedValue={this.state.workType}
-              onValueChange={(value)=>{this.setState({workType : value})}}>
+              selectedValue={data.milestone.id}
+              onValueChange={(value)=>{
+								let milestone = this.props.milestones.find((milestone)=> milestone.id === value);
+								setData({milestone})
+							}}
+							>
               {
-                workTypes.map((work)=>
-                (<Item label={work} key={work} value={work} />)
-              )
-            }
-          </Picker>
-        </View>
-
-          <Text note>{i18n.t('workHours')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Input
-              value={this.state.work_time}
-              keyboardType='numeric'
-              placeholder={i18n.t('enterWorkHours')}
-              onChangeText={ value => {let result = processInteger(value);this.setState({work_time:(result?result:this.state.work_time)})} }
-              />
+                currentMilestones.map((milestone)=>
+                (<Item label={milestone.title?milestone.title:''} key={milestone.id} value={milestone.id} />))
+              }
+            </Picker>
           </View>
 
-          <Text note>{i18n.t('startsAt')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Button block style={{backgroundColor:'white'}} onPress={()=>this.setState({startedAtOpen:true})}>
-              <Left>
-                <Text style={{textAlign:'left',color:'black'}}>{this.state.startedAt==null ? i18n.t('selectStartsAt') : formatDate(this.state.startedAt)}</Text>
-              </Left>
-            </Button>
-            <DateTimePicker
-              mode="datetime"
-              isVisible={this.state.startedAtOpen}
-              onConfirm={(date)=>this.setState({startedAt:(new Date(date)).getTime(),startedAtOpen:false})}
-              onCancel={()=>this.setState({startedAtOpen:false})}
-              />
-          </View>
+
+        	{ data.defaults.assignedTo.show &&
+						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
+	            <MultiPicker
+	              options={usersWithPermissions}
+	              selected={data.assignedTo}
+								disabled={data.defaults.assignedTo.fixed}
+	              showAttribute="email"
+	              onChange={(assignedTo)=>{
+									setData({assignedTo})
+							}}
+	              title={i18n.t('assigned')}
+	              selectTitle={i18n.t('selectAssignedUsers')}
+	              />
+	          </View>
+					}
+
+          { data.defaults.requester.show && <Text note>{i18n.t('requester')}</Text> }
+          { data.defaults.requester.show &&
+						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
+	            <Picker
+	              supportedOrientations={['portrait', 'landscape']}
+	              iosHeader={i18n.t('selectOne')}
+	              mode="dropdown"
+								enabled={!(data.defaults.requester.fixed)}
+	              selectedValue={data.requester.id}
+	              onValueChange={(value)=>{
+									let requester = this.props.users.find((user)=>user.id === value);
+									setData({requester})
+								}}>
+	              {
+	                requesters.map((requester)=>
+	                (<Item label={requester.email?requester.email:''} key={requester.id} value={requester.id} />))
+	              }
+	            </Picker>
+	          </View>
+				}
+
+          { data.defaults.company.show && <Text note>{i18n.t('company')}</Text> }
+          { data.defaults.company.show &&
+						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
+	            <Picker
+	              supportedOrientations={['portrait', 'landscape']}
+	              iosHeader={i18n.t('selectOne')}
+	              mode="dropdown"
+	              selectedValue={data.company ? data.company.id : null}
+	              onValueChange={(value)=>{
+									let company = this.props.companies.find((company)=> company.id === value)
+									if(data.defaults.pausal.fixed){
+										setData({company});
+									}
+									setData({company, pausal:(parseInt(company.workPausal)>0)})
+								}}
+								>
+	              {
+	                this.props.companies.map((company)=>
+	                (<Item label={company.title ? company.title : '' } key={company.id} value={company.id} />))
+	              }
+	            </Picker>
+	          </View>
+				}
 
           <Text note>{i18n.t('deadline')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Button block style={{backgroundColor:'white'}} onPress={()=>this.setState({deadlineOpen:true})}>
-              <Left>
-                <Text style={{textAlign:'left',color:'black'}}>{this.state.deadline==null ? i18n.t('selectDeadline') : formatDate(this.state.deadline)}</Text>
-              </Left>
-            </Button>
-            <DateTimePicker
-              mode="datetime"
-              isVisible={this.state.deadlineOpen}
-              onConfirm={(date)=>this.setState({deadline:(new Date(date)).getTime(),deadlineOpen:false})}
-              onCancel={()=>this.setState({deadlineOpen:false})}
-              />
-          </View>
+          <Button onPress={()=>this.setState({deadlineOpen:!this.state.deadlineOpen})}><Text style={{color:'white',flex:1,textAlign:'center'}}>{data.deadline ? formatDate(data.deadline) : i18n.t('noDeadline')}</Text></Button>
+          <DateTimePicker
+            mode="datetime"
+            isVisible={this.state.deadlineOpen}
+            onConfirm={(deadline)=>{
+							this.setState({deadlineOpen:false});
+							setData({deadline})
+					}}
+            onCancel={()=>this.setState({deadlineOpen:false})}
+            />
+					{ data.defaults.pausal.show &&
+						<Item
+							inlineLabel
+							style={{marginBottom:20, borderBottomWidth:0,marginTop:10,paddingBottom:5}}
+							onPress= {()=>{
+								if(data.defaults.pausal.fixed){
+									return;
+								}
+								setData({pausal:!data.pausal})
+							}}
+							>
+	            <CheckBox
+								checked={data.pausal}
+								color='#3F51B5'
+								disabled = {data.defaults.pausal.fixed}
+								onPress={()=>{ setData({pausal:!data.pausal})}}
+								/>
+	            <Label style={{marginLeft:15}}>{i18n.t('pausal')}</Label>
+	          </Item>
+					}
 
-          <Text note>{i18n.t('followers')}</Text>
-          <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Button block style={{backgroundColor:'white'}} onPress={()=>this.setState({followersOpen:true})}>
-              <Left>
-                <Text style={{textAlign:'left',color:'black'}}>{i18n.t('selectFollowers')}</Text>
-                  </Left>
-                </Button>
-                {
-                  this.state.followers.map((item)=><Text key={item.id} style={{textAlign:'left',color:'black'}}>
-                      {item.name||item.surname?
-                      <Text>{item.name?item.name:''+' '+item.surname?item.surname:''}</Text>:
-                        <Text>{item.username}</Text>}
-                </Text>)
-                }
-              </View>
-
-              {this.props.taskAttributes.map(attribute => {
-                switch (attribute.type) {
-                  case "input":{
-                    return (
-                      <View key={attribute.id}>
-                        <Text note>{attribute.title}</Text>
-                        <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-                          <Input
-                            placeholder={attribute.title}
-                            value={this.state.task_data[attribute.id]}
-                            onChangeText={ value => {
-                              let newData = { ...this.state.task_data };
-                              newData[attribute.id] = value;
-                              this.setState({ task_data: newData });
-                            }}
-                            />
-                        </View>
-                      </View>
-                    );
-                  }
-                  case "text_area":{
-                    return (
-                      <View key={attribute.id}>
-                        <Text note>{attribute.title}</Text>
-                        <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-                          <Input
-                            multiline={true}
-                            style={{height:60}}
-                            placeholder={attribute.title}
-                            value={this.state.task_data[attribute.id]}
-                            onChangeText={ value => {
-                              let newData = { ...this.state.task_data };
-                              newData[attribute.id] = value;
-                              this.setState({ task_data: newData });
-                            }}
-                            />
-                        </View>
-                      </View>
-                    );
-                  }
-                  case "simple_select":{
-                    return(
-                      <Picker
-                       key={attribute.id}
-                        supportedOrientations={['portrait', 'landscape']}
-                        iosHeader={i18n.t('selectOne')}
-                        mode="dropdown"
-                        selectedValue={this.state.task_data[attribute.id]}
-                        onValueChange={(value)=>{
-                          let newData = { ...this.state.task_data };
-                          newData[attribute.id] = value;
-                          this.setState({ task_data: newData });
-                        }}>
-                        {
-                          attribute.options.map((item)=>
-                          (<Item label={item} key={item} value={item} />)
-                        )
-                      }
-                    </Picker>
-                    );
-                  }
-                  case "multi_select":{
-                    //selected title selectTitle options onChange
-                    return <MultiPicker
-                      selected={[]}
-                      title={attribute.title}
-                      key={attribute.id}
-                      selectTitle={i18n.t('select')+' '+attribute.title}
-                      options={attribute.options.map((item)=>{return {id:item, title:item};})}
-                      onChange={(value)=>{
-                        let newData = { ...this.state.task_data };
-                        newData[attribute.id] = value;
-                        this.setState({ task_data: newData });
-                      }}
-                      />;
-                  }
-                  case "date":{
-                    return <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }} key={attribute.id}>
-                    <Button block style={{backgroundColor:'white'}} onPress={()=>this.setState({open:attribute.id})}>
-                      <Left>
-                        <Text style={{textAlign:'left',color:'black'}}>{this.state.task_data[attribute.id]===null ? i18n.t('selectDate') : formatDate(this.state.task_data[attribute.id])}</Text>
-                      </Left>
-                    </Button>
-                    <DateTimePicker
-                      mode="datetime"
-                      isVisible={this.state.open===attribute.id}
-                      onConfirm={(date)=>{
-                        let value = (new Date(date)).getTime();
-                        let newData = { ...this.state.task_data };
-                        newData[attribute.id] = value;
-                        this.setState({ task_data: newData, open:null });
-                      }}
-                      onCancel={()=>this.setState({open:null})}
-                      />
-                    </View>
-                  }
-                  case "decimal_number":{
-                    return (
-                      <View key={attribute.id}>
-                        <Text note>{attribute.title}</Text>
-                        <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-                          <Input
-                            keyboardType='numeric'
-                            placeholder={attribute.title}
-                            value={this.state.task_data[attribute.id]}
-                            onChangeText={ value => {
-                              let newData = { ...this.state.task_data };
-                              newData[attribute.id] = value;
-                              this.setState({ task_data: newData });
-                            }}
-                            />
-                        </View>
-                      </View>
-                    );
-                  }
-                  case "integer_number":{
-                    return (
-                      <View key={attribute.id}>
-                        <Text note>{attribute.title}</Text>
-                        <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-                          <Input
-                            keyboardType='numeric'
-                            placeholder={attribute.title}
-                            value={this.state.task_data[attribute.id]}
-                            onChangeText={ value => {
-                              let newData = { ...this.state.task_data };
-                              newData[attribute.id] = value;
-                              this.setState({ task_data: newData });
-                            }}
-                            />
-                        </View>
-                      </View>
-                    );
-                  }
-                  case "checkbox":{
-                    return <Item
-                      inlineLabel
-                      key={attribute.id}
-                      style={{marginBottom:20, borderBottomWidth:0,marginTop:10,paddingBottom:5}}
-                      onPress={ value => {
-                        let newData = { ...this.state.task_data };
-                        newData[attribute.id] = !this.state.task_data[attribute.id];
-                        this.setState({ task_data: newData });
-                      }}>
-                      <CheckBox
-                        checked={this.state.task_data[attribute.id]}
-                        color='#3F51B5'
-                        onPress={ value => {
-                          let newData = { ...this.state.task_data };
-                          newData[attribute.id] = !this.state.task_data[attribute.id];
-                          this.setState({ task_data: newData });
-                        }}/>
-                      <Label style={{marginLeft:15}}>{attribute.title}</Label>
-                    </Item>
-
-                  }
-                    return <Text key={attribute.id}>{attribute.title}</Text>;
-
-                      default:
-                      return <Text key={attribute.id}>{attribute.title}</Text>;
-                      }
-                    })}
-
-              <Modal
-                animationType={"fade"}
-                transparent={false}
-                style={{flex:1}}
-                visible={this.state.tagOpen}
-                onRequestClose={() => this.setState({tagOpen:false})}
-                >
-                <Content style={{ padding: 15 }}>
-                  <Header>
-                    <Body>
-                      <Title>{i18n.t('selectTaskTags')}</Title>
-                    </Body>
-                  </Header>
-
-                  <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-                    <List
-                      dataArray={this.props.tags}
-                      renderRow={item =>
-                        <TaskTag item={item} setTag={this.setTag.bind(this)} selected={this.state.tag.some((tag)=>item.id===tag.id)}/>
-                      }
-                      />
-                  </View>
-
-                </Content>
-                <Footer>
-
-                  <FooterTab>
-                    <Button style={{ flexDirection: 'row', borderColor: 'white', borderWidth: 0.5 }}
-                      onPress={()=>this.setState({tagOpen:false})}>
-                      <Text style={{ color: 'white' }}>{i18n.t('done')}</Text>
-                    </Button>
-                  </FooterTab>
-                </Footer>
-              </Modal>
-
-              <Modal
-                animationType={"fade"}
-                transparent={false}
-                style={{flex:1}}
-                visible={this.state.companyOpen}
-                onRequestClose={() => this.setState({companyOpen:false})}>
-                <Header>
-                  <Body>
-                    <Title>{i18n.t('selectCompany')}</Title>
-                  </Body>
-                </Header>
-                <Content style={{ padding: 15 }}>
-
-                  <ListItem>
-                    <Item rounded>
-                      <Icon name="ios-search" />
-                      <Input placeholder={i18n.t('search')} value={this.state.companyFilter} onChangeText={((value)=>this.setState({companyFilter:value}))} />
-                    </Item>
-                  </ListItem>
-
-                  <List>
-                    {
-                      this.props.companies.map((company) =>
-                      company.title.toLowerCase().includes(this.state.companyFilter.toLowerCase()) && <ListItem button key={company.id} onPress={()=>this.setState({company:company,companyOpen:false})} >
-                      <Body>
-                        <Text>{company.title}</Text>
-                      </Body>
-                      <Right>
-                        <Icon name="arrow-forward" />
-                      </Right>
-                    </ListItem>
-                  )
-                }
-              </List>
-            </Content>
-          </Modal>
-
-          <Modal
-            animationType={"fade"}
-            transparent={false}
-            style={{flex:1}}
-            visible={this.state.requestedByOpen}
-            onRequestClose={() => this.setState({requestedByOpen:false})}>
-            <Header>
-              <Body>
-                <Title>{i18n.t('selectRequester')}</Title>
-              </Body>
-            </Header>
-            <Content style={{ padding: 15 }}>
-
-              <ListItem>
-                <Item rounded>
-                  <Icon name="ios-search" />
-                  <Input placeholder={i18n.t('search')} value={this.state.requestedByFilter} onChangeText={((value)=>this.setState({requestedByFilter:value}))} />
-                </Item>
-              </ListItem>
-
-              <List>
-                {this.props.users.map((user) =>
-                  (user.email+user.name).toLowerCase().includes(this.state.requestedByFilter.toLowerCase()) &&
-                  <ListItem button key={user.id} onPress={()=>this.setState({requestedBy:user,requestedByOpen:false})} >
-                    <Body>
-                      {
-                        (user.name)?<Text>{user.name}</Text>:null
-                      }
-                      <Text note>{user.email}</Text>
-                    </Body>
-                    <Right>
-                      <Icon name="arrow-forward" />
-                    </Right>
-                  </ListItem>
-                )
-              }
-            </List>
-          </Content>
-        </Modal>
-
-        <Modal
-          animationType={"fade"}
-          transparent={false}
-          style={{flex:1}}
-          visible={this.state.assignedOpen}
-          onRequestClose={() => this.setState({assignedOpen:false})}>
-          <Header>
-            <Body>
-              <Title>{i18n.t('selectAssignedTo')}</Title>
-            </Body>
-          </Header>
-          <Content style={{ padding: 15 }}>
-
-            <ListItem>
-              <Item rounded>
-                <Icon name="ios-search" />
-                <Input placeholder={i18n.t('search')} value={this.state.assignedFilter} onChangeText={((value)=>this.setState({assignedFilter:value}))} />
-              </Item>
-            </ListItem>
-
-            <List>
-                {
-                  (([{id:null,name:i18n.t('noUser')}]).concat(this.props.taskSolvers)).map((user) =>
-                  ((user.name?user.name:'')+' '+(user.surname?user.surname:'')+' '+(user.name?user.name:'')+user.username).toLowerCase().includes(this.state.assignedFilter.toLowerCase()) &&
-                  <ListItem button key={user.id} onPress={()=>this.setState({assigned:user,assignedOpen:false})} >
-                    <Body>
-                      {
-                        (user.name||user.surname)?<Text>{user.name?user.name+' ':''}{user.surname?user.surname:''}</Text>:null
-                      }
-                      <Text note>{user.username}</Text>
-                    </Body>
-                    <Right>
-                      <Icon name="arrow-forward" />
-                    </Right>
-                  </ListItem>
-                )
-              }
-            </List>
-          </Content>
-        </Modal>
-        <Modal
-          animationType={"fade"}
-          transparent={false}
-          style={{flex:1}}
-          visible={this.state.followersOpen}
-          onRequestClose={() => this.setState({followersOpen:false})}
-          >
-          <Content style={{ padding: 15 }}>
-            <Header>
-              <Body>
-                <Title>{i18n.t('selectTaskFollowers')}</Title>
-              </Body>
-            </Header>
-
-            <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-              <List
-                dataArray={this.props.users}
-                renderRow={item =>
-                  <TaskFollower item={item} setFollower={this.setFollower.bind(this)} selected={this.state.followers.some((follower)=>item.id===follower.id)}/>
-                }
-                />
-            </View>
-
-          </Content>
-          <Footer>
-
-            <FooterTab>
-              <Button style={{ flexDirection: 'row', borderColor: 'white', borderWidth: 0.5 }}
-                onPress={()=>this.setState({followersOpen:false})}>
-                <Text style={{ color: 'white' }}>{i18n.t('done')}</Text>
-              </Button>
-            </FooterTab>
-          </Footer>
-        </Modal>
-        <Button
-          block
-          primary
-          onPress={()=>{
-
-          }}>
-          <Text>{i18n.t('addAttachement')}</Text>
-        </Button>
-        <List style={{marginBottom:40}}>
-          {this.props.attachments.length>0 &&
-            <ListItem button key="def">
-                <Left>
-                  <Text>File name (size)</Text>
-              </Left>
-              <Right>
-                <Icon name="md-trash" style={{ color: 'white' }} />
-              </Right>
-            </ListItem>}
-        {this.props.attachments.map((item,index)=>
-        <ListItem key={item.id} style={{padding:0,margin:0}}>
-          <Left>
-            <Text>{item.file.name+'('+Math.ceil(item.file.size/1000)+'kb)'}</Text>
-          </Left>
-          <Right>
-          <Button transparent onPress={()=>this.props.removeFile(item.id)}>
-            <Icon name="md-trash" style={{ color: 'black' }} />
-          </Button>
-        </Right>
-        </ListItem>
-        )}
-      </List>
-      </Content>
-    </Container>
-  );
+          { data.defaults.overtime.show &&
+						<Item
+							inlineLabel
+							style= {{marginBottom:20, borderBottomWidth:0,marginTop:10,paddingBottom:5}}
+							onPress= {()=>{
+								if(data.defaults.overtime.fixed){
+									return;
+								}
+								setData({overtime:!data.overtime})
+							}}
+							>
+	            <CheckBox
+								checked={data.overtime}
+								color='#3F51B5'
+								disabled = {data.defaults.overtime.fixed}
+								onPress={()=>{ setData({overtime:!data.overtime})}}
+								/>
+	            <Label style={{marginLeft:15}}>{i18n.t('overtime')}</Label>
+	          </Item>
+					}
+          {data.defaults.tags.show &&
+						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
+	            <MultiPicker
+	              options={this.props.tags}
+	              selected={data.tags}
+								disabled={data.defaults.tags.fixed}
+	              showAttribute="title"
+	              color
+	              onChange={(tags)=>{
+	                setData({tags});
+	              }}
+	              title={i18n.t('tags')}
+	              selectTitle={i18n.t('selectTags')}
+	              />
+	          </View>
+					}
+        </Content>
+      </Container>
+    );
   }
 }
 
 //creates function that maps actions (functions) to the redux store
-const mapStateToProps = ({ taskReducer, loginReducer, userReducer, subtaskReducer, itemReducer}) => {
-  const {users} = userReducer;
-  const {token, user} = loginReducer;
-  const { companies ,statuses, projects,tags, taskSolvers, taskAttributes, attachments} = taskReducer;
-  const { subtasks } = subtaskReducer;
-  const { items } = itemReducer;
-  return { users,user, token, companies,statuses, projects,tags, taskSolvers, taskAttributes, attachments, subtasks, items};
+const mapStateToProps = ({
+  storageCompanies,
+  storageHelpStatuses,
+  storageHelpTags,
+  storageHelpTaskTypes,
+  storageHelpTasks,
+  storageUsers,
+  storageHelpMilestones,
+  loginReducer,
+   }) => {
+  const { companies } = storageCompanies;
+	const { statuses } = storageHelpStatuses;
+	const { tags } = storageHelpTags;
+	const { taskTypes } = storageHelpTaskTypes;
+	const { tasks } = storageHelpTasks;
+	const { users } = storageUsers;
+	const { milestones } = storageHelpMilestones;
+  return {
+    companies,
+    statuses,
+    tags,
+    taskTypes,
+    tasks,
+    users,
+    milestones,
+    currentUser: loginReducer,
+  };
 };
 
 //exports created Component connected to the redux store and redux actions
-export default connect(mapStateToProps,{addTask,getTaskSolvers,removeFile, uploadFile})(TabAtributes);
+export default connect(mapStateToProps,{})(TabAtributes);

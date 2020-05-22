@@ -80,7 +80,7 @@ class TabAtributes extends Component {
               this.setState({descriptionEditor:editor.current})
           }}
             onChange={()=>{
-                this.setState({ description:this.state.descriptionEditor.getEditorState() }, this.inputChanged.bind(this));
+                this.setState({ description:this.state.descriptionEditor? this.state.descriptionEditor.getEditorState() : this.state.description }, this.inputChanged.bind(this));
             }}
             placeholder={i18n.t('enterTaskDescription')}
             />

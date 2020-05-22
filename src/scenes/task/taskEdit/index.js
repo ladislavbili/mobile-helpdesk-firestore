@@ -7,6 +7,7 @@ import { ActivityIndicator, Alert, BackHandler } from 'react-native';
 import TabDescriptionLoader from './tabDescriptionLoader';
 import TabAttributesLoader from './tabAttributesLoader';
 import TabCommentsLoader from './tabCommentsLoader';
+import TabInvoicesLoader from './tabInvoicesLoader';
 import i18n from 'i18next';
 
 /**
@@ -93,7 +94,10 @@ export default class TaskEdit extends Component {
             <TabAttributesLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />
           </Tab>
           <Tab heading={i18n.t('comments')}>
-            <TabCommentsLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />
+            <TabCommentsLoader id={this.props.id} />
+          </Tab>
+          <Tab heading={i18n.t('invoices')}>
+            <TabInvoicesLoader id={this.props.id} />
           </Tab>
         </Tabs>
       </Container>

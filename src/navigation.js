@@ -25,8 +25,6 @@ import TaskAdd from './scenes/task/taskAdd';
 import CommentAdd from './scenes/task/commentAdd';
 import ItemAdd from './scenes/task/itemAdd';
 import ItemEdit from './scenes/task/itemEdit';
-import SubtaskAdd from './scenes/task/subtaskAdd';
-import SubtaskEdit from './scenes/task/subtaskEdit';
 
 /**
  * Contains router that was connected to the redux storage
@@ -57,8 +55,6 @@ class AppNavigator extends Component {
               <Scene key="commentAdd" component={CommentAdd} />
               <Scene key="itemAdd" component={ItemAdd} />
               <Scene key="itemEdit" component={ItemEdit} />
-              <Scene key="subtaskAdd" component={SubtaskAdd} />
-              <Scene key="subtaskEdit" component={SubtaskEdit} />
               <Scene key="userList" component={UserList} />
               <Scene key="userAdd" component={UserAdd} />
               <Scene key="userEdit" component={UserEdit} />

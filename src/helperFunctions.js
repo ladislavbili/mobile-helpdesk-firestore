@@ -106,3 +106,10 @@ export const snapshotToArray = (snapshot) => {
     return {id:item.id,...item.data()};
   })
 }
+
+export const getFirebaseItem = (snapshot) => {
+  if(!snapshot.exists){
+    return null;
+  }
+  return {id:snapshot.id,...snapshot.data()};
+}

@@ -16,8 +16,8 @@ class Login extends Component {
   constructor(props){
     super(props);
     this.state={
-      email:'admin@admin.sk',
-      password:'adminadmin',
+      email:'l.bilisics@gmail.com',
+      password:'bilisicsbilisics',
       processing:false,
       error:false,
     }
@@ -35,8 +35,10 @@ class Login extends Component {
   login(){
 		this.setState({error:false, processing:true});
 		firebase.auth().signInWithEmailAndPassword(this.state.email,this.state.password).then((res)=>{
+      console.log('Logged in');
 			this.setState({processing:false})
 		}).catch(error=>{
+      console.log('Failed to Logged in');
       this.setState({error:true,processing:false});
     });
 	}

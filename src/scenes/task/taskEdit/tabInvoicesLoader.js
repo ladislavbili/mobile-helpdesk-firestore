@@ -1,18 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { ActivityIndicator } from 'react-native';
-
-import AddTabs from './addTabs';
+import TabInvoices from './tabInvoices';
+import { snapshotToArray } from '../../../helperFunctions';
 import {
   storageUsersStart,
+  storageHelpProjectsStart,
   storageHelpTasksStart,
   storageHelpTaskTypesStart,
   storageHelpTripTypesStart,
-  storageHelpUnitsStart,
-  storageMetadataStart,
-  storageCompaniesStart,
-  storageHelpPricelistsStart,
-  storageHelpProjectsStart,
+  storageHelpStatusesStart,
 
   setInvoiceWorks,
   setInvoiceTrips,
@@ -20,17 +17,17 @@ import {
   setInvoiceCustomItems,
   clearInvoices,
 } from '../../../redux/actions';
-
 import firebase from 'react-native-firebase';
-const database = firebase.firestore();
+let database = firebase.firestore();
+
 /**
-* Load all of the attributes required for the user to create a new item
-* @extends Component
-*/
-class ItemAddLoader extends Component {
+ * Loads all of the data needed for user to seach for tasks
+ * @extends Component
+ */
+class TabInvoicesLoader extends Component {
   constructor(props){
     super(props);
-    this.listeners = null;
+    this.listeners = [];
     this.startStorage.bind(this);
     this.startStorage();
   }
@@ -39,6 +36,9 @@ class ItemAddLoader extends Component {
   startStorage(){
     if(!this.props.usersActive){
       this.props.storageUsersStart();
+    }
+    if(!this.props.projectsActive){
+      this.props.storageHelpProjectsStart();
     }
     if(!this.props.tasksActive){
       this.props.storageHelpTasksStart();
@@ -49,34 +49,13 @@ class ItemAddLoader extends Component {
     if(!this.props.tripTypesActive){
       this.props.storageHelpTripTypesStart();
     }
-    if(!this.props.unitsActive){
-      this.props.storageHelpUnitsStart();
-    }
-    if(!this.props.metadataActive){
-      this.props.storageMetadataStart();
-    }
-    if(!this.props.companiesActive){
-      this.props.storageCompaniesStart();
-    }
-    if(!this.props.pricelistsActive){
-      this.props.storageHelpPricelistsStart();
-    }
-    if(!this.props.projectsActive){
-      this.props.storageHelpProjectsStart();
+    if(!this.props.statusesActive){
+      this.props.storageHelpStatusesStart();
     }
 
   }
 
   startListeners(){
-    if(
-      this.props.invoices.worksLoaded &&
-      this.props.invoices.tripsLoaded &&
-      this.props.invoices.materialsLoaded &&
-      this.props.invoices.metadataLoaded &&
-      this.props.invoices.customItemsLoaded
-    ){
-      return;
-    }
 
     const listenerWorks = database.collection('help-task_works').where("task", "==", this.props.id).onSnapshot((worksReponse)=>{
       const works = snapshotToArray(worksReponse).sort((work1,work2) => work1.order - work2.order).map((works)=>({...works, generalType: 'work'}));
@@ -111,9 +90,6 @@ class ItemAddLoader extends Component {
   }
 
   componentWillUnmount(){
-    if(this.listeners === null){
-      return;
-    }
     this.listeners.forEach( (unsubscribe) => unsubscribe())
     this.props.clearInvoices();
   }
@@ -126,13 +102,10 @@ class ItemAddLoader extends Component {
 
     this.props.usersLoaded &&
     this.props.tasksLoaded &&
+    this.props.projectsLoaded &&
     this.props.tripTypesLoaded &&
     this.props.taskTypesLoaded &&
-    this.props.unitsLoaded &&
-    this.props.metadataLoaded &&
-    this.props.companiesLoaded &&
-    this.props.pricelistsLoaded &&
-    this.props.projectsLoaded
+    this.props.statusesLoaded
   }
 
   render() {
@@ -143,72 +116,78 @@ class ItemAddLoader extends Component {
         color='#007299' />
       )
     }
+    let task = this.props.tasks.find( (task) => task.id === this.props.id );
+    let permission = this.props.projects.find( (project) => project.id === task.project ).permissions.find((permission) => permission.user === this.props.currentUser.id);
+    let status = this.props.statuses.find((status) => status.id === task.status );
+    let	viewOnly = ((permission===undefined || !permission.write) && this.props.currentUser.userData.role.value===0) || (status && status.action==='invoiced');
+
+    let materials = this.props.invoices.materials;
+    let customItems = this.props.invoices.customItems;
+    let works = this.props.invoices.works.map((work)=>{
+			let assignedTo=work.assignedTo?this.props.users.find((item)=>item.id===work.assignedTo):null
+			return {
+				...work,
+				type:this.props.taskTypes.find((item)=>item.id===work.type),
+				assignedTo:assignedTo?assignedTo:null
+			}
+		});
+    let trips = this.props.invoices.trips.map((trip)=>{
+			let type= this.props.tripTypes.find((item)=>item.id===trip.type);
+			let assignedTo=trip.assignedTo?this.props.users.find((item)=>item.id===trip.assignedTo):null
+
+			return {
+				...trip,
+				type,
+				assignedTo:assignedTo?assignedTo:null
+			}
+		});
     return (
-      <AddTabs
+      <TabInvoices
         id={this.props.id}
-        workCount={ this.props.invoices.works.length }
-        tripCount={ this.props.invoices.trips.length }
-        materialCount={ this.props.invoices.materials.length }
-        customCount={ this.props.invoices.customItems.length }
+        works={works}
+        trips={trips}
+        materials={materials}
+        customItems={customItems}
+        viewOnly = {viewOnly}
         />
     );
   }
 }
 
-
 //creates function that maps actions (functions) to the redux store
-const mapStateToProps = ({
-  storageUsers,
-  storageHelpTasks,
-  storageHelpTaskTypes,
-  storageHelpTripTypes,
-  storageHelpUnits,
-  storageMetadata,
-  storageCompanies,
-  storageHelpPricelists,
-  storageHelpProjects,
-  invoicesReducer,
-}) => {
-  const { usersLoaded, usersActive } = storageUsers;
-  const { tasksLoaded, tasksActive } = storageHelpTasks;
-  const { taskTypesLoaded, taskTypesActive  } = storageHelpTaskTypes;
-  const { tripTypesLoaded, tripTypesActive } = storageHelpTripTypes;
-  const { unitsLoaded, unitsActive } = storageHelpUnits;
-	const { metadataLoaded, metadataActive } = storageMetadata;
-  const { companiesLoaded, companiesActive } = storageCompanies;
-  const { pricelistsLoaded, pricelistsActive  } = storageHelpPricelists;
-  const { projectsLoaded, projectsActive } = storageHelpProjects;
+const mapStateToProps = ({ storageUsers,storageHelpTasks, storageHelpProjects, storageHelpTaskTypes, storageHelpTripTypes, storageHelpStatuses, loginReducer, invoicesReducer }) => {
+  const { usersLoaded, usersActive, users } = storageUsers;
+  const { tasksLoaded, tasksActive, tasks } = storageHelpTasks;
+  const { projectsLoaded, projectsActive, projects } = storageHelpProjects;
+  const { taskTypesLoaded, taskTypesActive, taskTypes  } = storageHelpTaskTypes;
+  const { tripTypesLoaded, tripTypesActive, tripTypes } = storageHelpTripTypes;
+  const { statusesLoaded, statusesActive, statuses } = storageHelpStatuses;
   const invoices = invoicesReducer;
 
   return {
-    usersLoaded, usersActive,
-    tasksLoaded, tasksActive,
-    taskTypesLoaded, taskTypesActive,
-    tripTypesLoaded, tripTypesActive,
-    unitsLoaded, unitsActive,
-    metadataLoaded, metadataActive,
-    companiesLoaded, companiesActive,
-    pricelistsLoaded, pricelistsActive,
-    projectsLoaded, projectsActive,
+    usersLoaded, usersActive, users,
+    tasksLoaded, tasksActive, tasks,
+    projectsLoaded, projectsActive, projects,
+    taskTypesLoaded, taskTypesActive, taskTypes,
+    tripTypesLoaded, tripTypesActive, tripTypes,
+    statusesLoaded, statusesActive, statuses,
+    currentUser: loginReducer,
     invoices,
-   };
+  };
 };
 
 //exports created Component connected to the redux store and redux actions
 export default connect(mapStateToProps,{
   storageUsersStart,
+  storageHelpProjectsStart,
   storageHelpTasksStart,
   storageHelpTaskTypesStart,
   storageHelpTripTypesStart,
-  storageHelpUnitsStart,
-  storageMetadataStart,
-  storageCompaniesStart,
-  storageHelpPricelistsStart,
-  storageHelpProjectsStart,
+  storageHelpStatusesStart,
 
   setInvoiceWorks,
   setInvoiceTrips,
   setInvoiceMaterials,
   setInvoiceCustomItems,
   clearInvoices,
-})(ItemAddLoader);
+})(TabInvoicesLoader);

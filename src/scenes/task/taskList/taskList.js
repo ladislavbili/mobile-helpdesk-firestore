@@ -155,14 +155,6 @@ class TaskList extends Component {
           </Button>
         }
       </Content>
-        <Footer>
-          <FooterTab>
-            <Button vertical onPress={()=>{Actions.taskAdd()}}>
-              <Icon name="md-add" style={{ color: 'white' }} />
-              <Text style={{ color: 'white' }} >{i18n.t('task')}</Text>
-            </Button>
-          </FooterTab>
-        </Footer>
     </Container>
   );
 }
