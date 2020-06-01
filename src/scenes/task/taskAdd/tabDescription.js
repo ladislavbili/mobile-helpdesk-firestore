@@ -16,6 +16,13 @@ export default class TabDescription extends Component {
     }
   }
 
+  closeEditor(){
+    if(this.state.descriptionEditor === null){
+      return;
+    }
+    this.state.descriptionEditor.blur()
+  }
+
   render() {
     return (
       <Container>
@@ -26,6 +33,7 @@ export default class TabDescription extends Component {
             <Input
               placeholder={i18n.t('enterTaskName')}
               value={ this.props.data.title }
+              onFocus={() => this.closeEditor.bind(this)}
               onChangeText={ value => this.props.setData( { title: value } ) }
               />
             <InputError
@@ -41,9 +49,10 @@ export default class TabDescription extends Component {
               this.setState({descriptionEditor:editor.current})
           }}
             onChange={()=>{
-              if(this.state.descriptionEditor && this.state.descriptionEditor !== this.props.data.description ){
-                this.props.setData({ description: this.state.descriptionEditor.getEditorState() });
+              if(this.state.descriptionEditor === null){
+                return;
               }
+              this.props.setData({ description: this.state.descriptionEditor.getEditorState() });
             }}
             placeholder={i18n.t('enterTaskDescription')}
             />

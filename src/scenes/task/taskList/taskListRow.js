@@ -38,7 +38,7 @@ class TaskListRow extends Component {
             }</Text>
           <Text numberOfLines={1} note>{i18n.t('deadline')}: { deadline ? formatDate(deadline) : i18n.t('noDeadline') }</Text>
           <Item style={{backgroundColor:status.color,flex:1,flexDirection:'column' }}>
-            <Text style={{color:'white',paddingLeft:10,paddingRight:10,flex:1,flexDirection:'column'}}>{status.title}</Text>
+            <Text style={{color:'white',paddingLeft:10,paddingRight:10,flex:1,flexDirection:'column'}}>{i18n.t(status.title)}</Text>
           </Item>
         </Body>
         <Right>

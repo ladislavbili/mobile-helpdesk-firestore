@@ -120,7 +120,7 @@ class UserAdd extends Component {
             </Button>
           </Left>
           <Body>
-            <Title>{i18n.t('editUser')}</Title>
+            <Title>{i18n.t('addUser')}</Title>
           </Body>
           <Right>
             {

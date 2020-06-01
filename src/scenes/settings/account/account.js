@@ -163,14 +163,14 @@ class Account extends Component {
 
         <Button warning block onPress={()=>{
           Alert.alert(
-            'Are you sure?',
-            'Do you want to recieve password change through e-mail?',
+            i18n.t('areYouSure'),
+            i18n.t('passwordChangeAlert'),
             [
               {
-                text: 'Cancel',
+                text: i18n.t('cancel'),
                 style: 'cancel',
               },
-              {text: 'Reset password', onPress: () => {
+              {text: i18n.t('resetPassword') , onPress: () => {
                 this.setState({passReseted:true,passResetEnded:false})
                 firebase.auth().sendPasswordResetEmail(this.props.currentUser.userData.email).then(()=>{
                   this.setState({passResetEnded:true})
@@ -182,7 +182,7 @@ class Account extends Component {
           }}
           disabled={this.state.passReseted}
           style={{ flexDirection: 'row', borderColor: 'white', marginTop:5, marginBottom:20, borderWidth: 0.5 }}>
-          <Text style={{ color: 'white' }} >{this.state.passResetEnded?(this.state.passReseted?'Password reseted!':"Reset user's password"):"Resetting..."}</Text>
+          <Text style={{ color: 'white' }} >{this.state.passResetEnded?(this.state.passReseted? i18n.t('passwordReseted') :i18n.t('resetPassword')):i18n.t('resettingPassword')}</Text>
         </Button>
 
 

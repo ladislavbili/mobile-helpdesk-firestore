@@ -17,7 +17,12 @@ import i18n from 'i18next';
 export default class TaskEdit extends Component {
   constructor(props){
     super(props);
-    this.state={saveFunction:null, canSave:false, changed:false}
+    this.state={
+      saveFunction: null,
+      canSave: false,
+      changed: false,
+      descriptionEditorBlur: ()=>{},
+    }
   }
 
   /**
@@ -88,7 +93,12 @@ export default class TaskEdit extends Component {
         </Header>
         <Tabs>
           <Tab heading={i18n.t('description')}>
-            <TabDescriptionLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />
+            <TabDescriptionLoader
+              id={this.props.id}
+              saveFunction={this.setFunction.bind(this)}
+              inputChanged={this.inputChanged.bind(this)}
+              setDescriptionEditorBlur={ (descriptionEditorBlur) => this.setState({descriptionEditorBlur}) }
+              />
           </Tab>
           <Tab heading={i18n.t('attributes')}>
             <TabAttributesLoader id={this.props.id} saveFunction={this.setFunction.bind(this)} inputChanged={this.inputChanged.bind(this)} />

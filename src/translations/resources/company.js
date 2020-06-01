@@ -87,5 +87,92 @@ export default {
     en:'List of companies',
     sk:'Zoznam firiem',
   },
-
+  contractual:{
+    en:'Contractual',
+    sk:'Zmluvné',
+  },
+  non_contractual:{
+    en:'Non-contractual',
+    sk:'Nezmluvné',
+  },
+  dph:{
+    en:'DPH',
+    sk:'DPH',
+  },
+  enterDph:{
+    en:'Enter DPH',
+    sk:'Zadajte DPH',
+  },
+  selectPricelist:{
+    en:'Select pricelist',
+    sk:'Vyberte cenník',
+  },
+  DIC:{
+    en:'DIC',
+    sk:'DIČ',
+  },
+  enterDIC:{
+    en:'Enter DIC',
+    sk:'Zadajte DIČ',
+  },
+  ICO:{
+    en:'ICO',
+    sk:'IČO',
+  },
+  enterICO:{
+    en:'Enter ICO',
+    sk:'Zadajte IČO',
+  },
+  IC_DPH:{
+    en:'IC DPH',
+    sk:'IČ DPH',
+  },
+  enterIC_DPH:{
+    en:'Enter IC DPH',
+    sk:'Zadajte IČ DPH',
+  },
+  PSC:{
+    en:'Post code',
+    sk:'PSČ',
+  },
+  enterPSC:{
+    en:'Enter post code',
+    sk:'Zadajte PSČ',
+  },
+  description:{
+    en:'Description',
+    sk:'Popis',
+  },
+  enterDescription:{
+    en:'Enter description',
+    sk:'Zadajte popis',
+  },
+  monthlyPausal:{
+    en:'Mothly pausal',
+    sk:'Mesačný paušál',
+  },
+  workPausal:{
+    en:'Work pausal',
+    sk:'Paušál prác',
+  },
+  enterWorkPausal:{
+    en:'Enter work pausal',
+    sk:'Zadajte paušál prác',
+  },
+  drivePausal:{
+    en:'Drive pausal',
+    sk:'Paušál výjazdov',
+  },
+  enterDrivePausal:{
+    en:'Enter drive pausal',
+    sk:'Zadajte paušál výjazdov',
+  },
+  phone:{
+    en:'Phone number',
+    sk:'Telefónne číslo',
+  },
+  enterPhone:{
+    en:'Enter phone number',
+    sk:'Zadajte telefónne číslo',
+  },
 };

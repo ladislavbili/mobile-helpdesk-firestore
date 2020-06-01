@@ -39,6 +39,10 @@ class TabAtributes extends Component {
 		if(company === undefined){
 			company = this.props.companies[0];
 		}
+		let milestone = this.props.milestones.find((item)=>item.id===task.milestone);
+		if(milestone === undefined){
+			milestone = noMilestone;
+		}
 		let project = this.props.projects.find((project)=>project.id === task.project);
 		let status = this.props.statuses.find((item)=>item.id===task.status);
 		let permission = project.permissions.find((permission)=>permission.user===this.props.currentUser.id);
@@ -50,7 +54,7 @@ class TabAtributes extends Component {
 			originalStatus:status,
 			statusOpened:false,
 			type: this.props.taskTypes.find((type)=> task.type === type.id),
-			milestone: [noMilestone,...this.props.milestones].find((milestone)=> task.milestone === milestone.id),
+			milestone,
 
 			assignedTo: this.props.users.filter((user)=>task.assignedTo.some((userID)=>user.id === userID)),
 			requester: this.props.users.find((user)=>task.requester === user.id),
@@ -164,7 +168,6 @@ class TabAtributes extends Component {
 		})
 	}
 
-
 	submitForm(){
 		if(this.cantSave()){
 			return;
@@ -274,7 +277,7 @@ class TabAtributes extends Component {
           { this.state.defaultFields.status.show && <Text note>{i18n.t('status')}</Text>}
           { this.state.defaultFields.status.show &&
 						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Button style={statusButtonStyle} disabled={this.state.defaultFields.status.fixed||this.state.viewOnly} onPress={()=>this.setState({statusOpened:!this.state.statusOpened})}><Text style={{color:'white',flex:1,textAlign:'center'}}>{this.state.status.title}</Text></Button>
+            <Button style={statusButtonStyle} disabled={this.state.defaultFields.status.fixed||this.state.viewOnly} onPress={()=>this.setState({statusOpened:!this.state.statusOpened})}><Text style={{color:'white',flex:1,textAlign:'center'}}>{i18n.t(this.state.status.title)}</Text></Button>
             {
               this.state.statusOpened && !(this.state.defaultFields.status.fixed||this.state.viewOnly) && this.props.statuses.map((status)=>
               !(this.state.status.id===status.id) &&
@@ -322,13 +325,13 @@ class TabAtributes extends Component {
                   }
               }}
                 key={status.id} >
-                <Text style={{color:'white',flex:1,textAlign:'center'}}>{status.title}</Text>
+                <Text style={{color:'white',flex:1,textAlign:'center'}}>{i18n.t(status.title)}</Text>
               </Button>)
             }
           </View>
 					}
 
-          { this.state.defaultFields.type.show && <Text note>{i18n.t('type')}</Text>}
+          { this.state.defaultFields.type.show && <Text note>{i18n.t('taskType')}</Text>}
           { this.state.defaultFields.type.show &&
 						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
 	            <Picker

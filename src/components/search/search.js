@@ -141,10 +141,10 @@ class Search extends Component {
             selected={this.state.status}
             label={i18n.t('filterStatus')}
             buttonLabel={i18n.t('filterByStatus')}
-            getSearchValue={(status)=>status.title}
+            getSearchValue={(status)=>i18n.t(status.title)}
             renderRow={(status)=>
               <Body style={{backgroundColor:((status.color.includes('#')?'':'#')+status.color),paddingLeft:10}}>
-                <Text style={{color:'white', fontWeight:'bold'}}>{status.title}</Text>
+                <Text style={{color:'white', fontWeight:'bold'}}>{i18n.t(status.title)}</Text>
               </Body>
             }
             onChange={(newData)=>{
@@ -224,7 +224,7 @@ class Search extends Component {
               <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
                 <Button block style={{backgroundColor:'white', width:'99%'}} onPress={()=>this.setState({pendingDateFromOpen: true})}>
                   <Left>
-                    <Text style={{textAlign:'left',color:'black'}}>{this.state.pendingDateFrom === null ? i18n.t('selectpendingDateFrom') : formatDate(this.state.pendingDateFrom)}</Text>
+                    <Text style={{textAlign:'left',color:'black'}}>{this.state.pendingDateFrom === null ? i18n.t('selectPendingDateFrom') : formatDate(this.state.pendingDateFrom)}</Text>
                   </Left>
                 </Button>
                 <DateTimePicker
@@ -259,7 +259,7 @@ class Search extends Component {
               <View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
                 <Button block style={{backgroundColor:'white', width:'99%'}} onPress={()=>this.setState({statusDateFromOpen: true})}>
                   <Left>
-                    <Text style={{textAlign:'left',color:'black'}}>{this.state.statusDateFrom === null ? i18n.t('selectstatusDateFrom') : formatDate(this.state.statusDateFrom)}</Text>
+                    <Text style={{textAlign:'left',color:'black'}}>{this.state.statusDateFrom === null ? i18n.t('selectStatusDateFrom') : formatDate(this.state.statusDateFrom)}</Text>
                   </Left>
                 </Button>
                 <DateTimePicker

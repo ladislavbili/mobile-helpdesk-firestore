@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Modal, Linking } from 'react-native';
+import { Modal, Linking, TouchableWithoutFeedback } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'react-redux';
 import RichEditor from '../../../components/richEditor';
@@ -20,12 +20,14 @@ class TabAtributes extends Component {
 
     this.state = {
       title:task.title,
-      description:task.description,
+      description: task.description === '' ? '<p><br></p>' : task.description,
       descriptionEditor:null,
 
       submitError:false,
     }
     this.props.saveFunction(this.submitForm.bind(this));
+    this.closeEditor.bind(this);
+    this.props.setDescriptionEditorBlur(this.closeEditor.bind(this));
     this.canSave.bind(this);
   }
 
@@ -57,6 +59,13 @@ class TabAtributes extends Component {
 		//as a tags we send titles not ids
   }
 
+  closeEditor(){
+    if(this.state.descriptionEditor === null){
+      return;
+    }
+    this.state.descriptionEditor.blur()
+  }
+
   render() {
     //this.state.descriptionEditor.getEditorState()
     return (
@@ -68,6 +77,7 @@ class TabAtributes extends Component {
             <Input
               placeholder={i18n.t('enterTaskName')}
               value={ this.state.title }
+              onFocus={() => this.closeEditor.bind(this)}
               onChangeText={ value =>{ this.setState({title:value}, this.inputChanged.bind(this)) }}
               />
             {this.state.submitError && this.state.title==='' && <Text style={{color:'red'}}>{i18n.t('restrictionMustEnterTaskTitle')}</Text>}
@@ -80,7 +90,10 @@ class TabAtributes extends Component {
               this.setState({descriptionEditor:editor.current})
           }}
             onChange={()=>{
-                this.setState({ description:this.state.descriptionEditor? this.state.descriptionEditor.getEditorState() : this.state.description }, this.inputChanged.bind(this));
+              if(this.state.descriptionEditor === null){
+                return;
+              }
+                this.setState({ description:this.state.descriptionEditor.getEditorState() }, this.inputChanged.bind(this));
             }}
             placeholder={i18n.t('enterTaskDescription')}
             />

@@ -4,6 +4,9 @@ import { ActivityIndicator } from 'react-native';
 
 import AddTabs from './addTabs';
 import {
+  snapshotToArray,
+} from '../../../helperFunctions'
+import {
   storageUsersStart,
   storageHelpTasksStart,
   storageHelpTaskTypesStart,
@@ -18,7 +21,6 @@ import {
   setInvoiceTrips,
   setInvoiceMaterials,
   setInvoiceCustomItems,
-  clearInvoices,
 } from '../../../redux/actions';
 
 import firebase from 'react-native-firebase';
@@ -115,7 +117,6 @@ class ItemAddLoader extends Component {
       return;
     }
     this.listeners.forEach( (unsubscribe) => unsubscribe())
-    this.props.clearInvoices();
   }
 
   storageLoaded(){
@@ -210,5 +211,4 @@ export default connect(mapStateToProps,{
   setInvoiceTrips,
   setInvoiceMaterials,
   setInvoiceCustomItems,
-  clearInvoices,
 })(ItemAddLoader);

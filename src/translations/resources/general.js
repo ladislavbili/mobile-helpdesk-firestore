@@ -54,4 +54,8 @@ export default {
     en:'Select',
     sk:'Vyberte',
   },
+  areYouSure:{
+    en:'Are you sure?',
+    sk:'Ste si istý?',
+  }
 };

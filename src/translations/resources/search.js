@@ -87,4 +87,64 @@ export default {
     en:'Select acceptable Labels',
     sk:'Vyberte akceptovateľné značky',
   },
+  filterByWorkType: {
+    en: 'Type of work',
+    sk: 'Filtrovať podľa typu práce'
+  },
+  filterWorkType: {
+    en: 'Type of work',
+    sk: 'Typ práce'
+  },
+  closeDateFrom: {
+    en: 'Open since',
+    sk: 'Zavreté od'
+  },
+  closeDateTo: {
+    en: 'Closed until',
+    sk: 'Zavreté do'
+  },
+  selectCloseDateFrom: {
+    en: 'Select date from',
+    sk: 'Vyberte dátum od'
+  },
+  selectCloseDateTo: {
+    en: 'Select until date',
+    sk: 'Vyberte dátum do'
+  },
+  pendingDateFrom: {
+    en: 'Pending since',
+    sk: 'Prebieha od'
+  },
+  pendingDateTo: {
+    en: 'Pending until',
+    sk: 'Prebieha do'
+  },
+  selectPendingDateFrom: {
+    en: 'Select date from',
+    sk: 'Vyberte dátum od'
+  },
+  selectPendingDateTo: {
+    en: 'Select until date',
+    sk: 'Vyberte dátum do'
+  },
+  statusDateFrom: {
+    en: 'Status changed since',
+    sk: 'Status zmenený od'
+  },
+  statusDateTo: {
+    en: 'Status changed until',
+    sk: 'Status zmenený do'
+  },
+  selectStatusDateFrom: {
+    en: 'Select date from',
+    sk: 'Vyberte dátum od'
+  },
+  selectStatusDateTo: {
+    en: 'Select until date',
+    sk: 'Vyberte dátum do'
+  },
+  searchResults: {
+    en: 'Search results',
+    sk: 'Výsledky vyhľadávania'
+  },
 };

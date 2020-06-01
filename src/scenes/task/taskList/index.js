@@ -6,6 +6,7 @@ import { Actions } from 'react-native-router-flux';
 import { ActivityIndicator } from 'react-native';
 
 import TaskList from './taskList';
+import { fixedFilters } from '../../../components/sidebar/fixedFilters';
 import { openDrawer, storageHelpProjectsStart, storageHelpTasksStart, storageUsersStart, storageHelpFiltersStart, storageHelpStatusesStart } from '../../../redux/actions';
 import i18n from 'i18next';
 
@@ -54,7 +55,7 @@ class TaskListLoader extends Component {
   render() {
     let listTitle = null;
     if(this.props.filtersLoaded && this.props.filterID !== 'none'){
-      let filter = this.props.filters.find((filter)=>filter.id === this.props.filterID);
+      let filter = [ ...fixedFilters, ...this.props.filters ].find((filter)=>filter.id === this.props.filterID);
       if(filter){
         listTitle = filter.title;
       }
@@ -66,10 +67,10 @@ class TaskListLoader extends Component {
       }
     }
     if(this.props.listTitle){
-      listTitle = i18n.t(this.props.listTitle);
+      listTitle = this.props.listTitle;
     }
     if(listTitle === null){
-      listTitle = i18n.t('taskList');
+      listTitle = 'taskList';
     }
 
     return (
@@ -81,7 +82,7 @@ class TaskListLoader extends Component {
             </Button>
           </Left>
           <Body>
-            <Title>{listTitle}
+            <Title>{i18n.t(listTitle)}
             </Title>
           </Body>
           <Right>

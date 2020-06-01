@@ -12,20 +12,6 @@ import { formatDate,processInteger } from '../../../helperFunctions';
 import firebase from 'react-native-firebase';
 let database = firebase.firestore();
 
-const booleanSelects = [{value:false,label:'No'},{value:true,label:'Yes'}];
-
-
-const noDef={
-	status:{def:false, fixed:false, value: null, show: true },
-	tags:{def:false, fixed:false, value: [], show: true },
-	assignedTo:{def:false, fixed:false, value: [], show: true },
-	type:{def:false, fixed:false, value: null, show: true },
-	requester:{def:false, fixed:false, value: null, show: true },
-	company:{def:false, fixed:false, value: null, show: true },
-	pausal:{def:false, fixed:false, value: booleanSelects[0], show: true },
-	overtime:{def:false, fixed:false, value: booleanSelects[0], show: true },
-}
-
 const noMilestone = {id:null,value:null,title:'None',label:'None',startsAt:null, endsAt: null};
 
 /**
@@ -46,10 +32,12 @@ class TabAtributes extends Component {
 		const setData = this.props.setData;
     const statusButtonStyle= { backgroundColor: data.status.color, flex:1 };
 		const project = this.props.projects.find((project) => project.id === data.project);
-		const usersWithPermissions = this.props.users.filter((user)=>project && project.permissions && project.permissions.some((permission)=>permission.user===user.id));
+		const usersWithPermissions = this.props.users.filter((user)=>(
+			project &&
+			project.permissions &&
+			project.permissions.some((permission)=>permission.user===user.id)
+		));
 		const requesters =  (project && project.lockedRequester ? usersWithPermissions : this.props.users);
-
-
     let currentMilestones = this.props.milestones.filter((milestone)=>milestone.id===null || (data.project !== null && milestone.project===data.project))
     currentMilestones = [noMilestone,...currentMilestones];
     return (
@@ -71,11 +59,9 @@ class TabAtributes extends Component {
               onValueChange={(projectID)=>{
 								let project  = this.props.projects.find((project)=> project.id === projectID)
 								let permissionIDs = (project.permissions && project.permissions.map((permission) => permission.user)) || [];
-								let assignedTo=data.assignedTo.filter((user)=>permissionIDs.includes(user.id));
 
 								setData({
 									project: projectID,
-									assignedTo,
 									milestone: noMilestone,
 								});
 							}}>
@@ -93,7 +79,15 @@ class TabAtributes extends Component {
           { data.defaults.status.show && <Text note>{i18n.t('status')}</Text>}
           { data.defaults.status.show &&
 						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
-            <Button style={statusButtonStyle} disabled={data.defaults.status.fixed} onPress={()=>this.setState({statusOpened:!this.state.statusOpened})}><Text style={{color:'white',flex:1,textAlign:'center'}}>{data.status.title}</Text></Button>
+            <Button
+							style={statusButtonStyle}
+							disabled={data.defaults.status.fixed}
+							onPress={()=>this.setState({statusOpened:!this.state.statusOpened})}
+							>
+							<Text style={{color:'white',flex:1,textAlign:'center'}}>
+								{i18n.t(data.status.title)}
+							</Text>
+						</Button>
             {
               this.state.statusOpened && !(data.defaults.status.fixed) && this.props.statuses.map((status)=>
               !(data.status.id===status.id) &&
@@ -130,13 +124,13 @@ class TabAtributes extends Component {
                   }
               }}
                 key={status.id} >
-                <Text style={{color:'white',flex:1,textAlign:'center'}}>{status.title}</Text>
+                <Text style={{color:'white',flex:1,textAlign:'center'}}>{i18n.t(status.title)}</Text>
               </Button>)
             }
           </View>
 					}
 
-          { data.defaults.type.show && <Text note>{i18n.t('type')}</Text>}
+          { data.defaults.type.show && <Text note>{i18n.t('taskType')}</Text>}
           { data.defaults.type.show &&
 						<View style={{ borderColor: '#CCCCCC', borderWidth: 0.5, marginBottom: 15 }}>
 	            <Picker

@@ -31,7 +31,12 @@ class TabDescriptionLoader extends Component {
       )
     }
     return (
-      <TabDescription saveFunction={this.props.saveFunction} inputChanged={this.props.inputChanged} id={this.props.id} />
+      <TabDescription
+        saveFunction={this.props.saveFunction}
+        inputChanged={this.props.inputChanged}
+        id={this.props.id}
+        setDescriptionEditorBlur={this.props.setDescriptionEditorBlur}
+        />
     );
   }
 }

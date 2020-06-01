@@ -10,12 +10,15 @@ function fixOldFilterDates(filters){
         filter:{
           ...filter.filter,
           order: filter.order ? 0 : 0,
+          oneOf: filter.filter.oneOf !== undefined ? filter.filter.oneOf : [],
           pendingDateFrom: (filter.filter.pendingDateFrom==='' || filter.filter.pendingDateFrom===undefined) ? null : filter.filter.pendingDateFrom,
           pendingDateTo: (filter.filter.pendingDateTo==='' || filter.filter.pendingDateTo===undefined) ? null : filter.filter.pendingDateTo,
           closeDateFrom: (filter.filter.closeDateFrom==='' || filter.filter.closeDateFrom===undefined) ? null : filter.filter.closeDateFrom,
           closeDateTo: (filter.filter.closeDateTo==='' || filter.filter.closeDateTo===undefined) ? null : filter.filter.closeDateTo,
           statusDateFrom: (filter.filter.statusDateFrom==='' || filter.filter.statusDateFrom===undefined) ? null : filter.filter.statusDateFrom,
           statusDateTo: (filter.filter.statusDateTo==='' || filter.filter.statusDateTo===undefined) ? null : filter.filter.statusDateTo,
+          deadlineFrom: (filter.filter.deadlineFrom==='' || filter.filter.deadlineFrom===undefined) ? null : filter.filter.deadlineFrom,
+          deadlineTo: (filter.filter.deadlineTo==='' || filter.filter.deadlineTo===undefined) ? null : filter.filter.deadlineTo,
         }
       }
     }).sort((filter1, filter2)=>{

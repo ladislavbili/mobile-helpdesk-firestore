@@ -27,6 +27,14 @@ export default {
     en:'Password',
     sk:'Heslo',
   },
+  passwordConfirmation:{
+    en:'Password confirmation',
+    sk:'Potvrdenie hesla',
+  },
+  enterPasswordConfirmation:{
+    en:'Enter password again',
+    sk:'Zadajte znova heslo',
+  },
   enterNewPassword:{
     en:'Enter user\' password',
     sk:'Zadajte heslo',

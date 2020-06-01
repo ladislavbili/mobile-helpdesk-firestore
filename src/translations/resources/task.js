@@ -279,4 +279,32 @@ export default {
     en: "Add attachement",
     sk: "Pridať prílohu",
   },
+  pausal: {
+    en: "Pausal",
+    sk: "Paušál",
+  },
+  overtime: {
+    en: "Overtime",
+    sk: "Mimo PH",
+  },
+  taskType: {
+    en: "Task type",
+    sk: "Typ úlohy",
+  },
+  milestone: {
+    en: "Milestone",
+    sk: "Miľník",
+  },
+  selectAssignedUsers: {
+    en: "Select assigned users",
+    sk: "Vyberte riešiteľov",
+  },
+  restrictionMustSelectTaskProject: {
+    en: "You must select project of the task",
+    sk: "Musíte vybrať projekt úlohy",
+  },
+  restrictionMustSelectTaskType: {
+    en: "You must select type of the task",
+    sk: "Musíte vybrať typ úlohy",
+  },
 };

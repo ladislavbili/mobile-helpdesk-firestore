@@ -229,7 +229,8 @@ class UserEdit extends Component {
           }}
           disabled={this.state.passReseted}
           style={{ flexDirection: 'row', borderColor: 'white', marginTop:5, marginBottom:20, borderWidth: 0.5 }}>
-          <Text style={{ color: 'white' }} >{this.state.passResetEnded?(this.state.passReseted?'Password reseted!':"Reset user's password"):"Resetting..."}</Text>
+
+          <Text style={{ color: 'white' }} >{this.state.passResetEnded?(this.state.passReseted? i18n.t('passwordReseted') :i18n.t('resetPassword')):i18n.t('resettingPassword')}</Text>
         </Button>
 
           <Modal

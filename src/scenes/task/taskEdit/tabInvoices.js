@@ -70,7 +70,6 @@ class TabItems extends Component{
         <Content padder style={{ marginTop: 0 }}>
           { data.map((item) =>
             <Card key={item.id}>
-              <Text>{item.order}</Text>
               <CardItem style={noBorders}>
                 <Text note style={centered}>
                   {

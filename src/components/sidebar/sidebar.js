@@ -5,6 +5,7 @@ import { Actions } from 'react-native-router-flux';
 import { ActivityIndicator } from 'react-native';
 
 import { closeDrawer, setProject, setFilter } from '../../redux/actions';
+import { fixedFilters } from './fixedFilters';
 import styles from './style';
 import i18n from 'i18next';
 
@@ -15,7 +16,7 @@ import i18n from 'i18next';
 class Sidebar extends Component {
 
   render() {
-    let filters = [{title:i18n.t('none'),id:'none'}].concat(this.props.filters.filter((filter)=>filter.createdBy===this.props.currentUser.id||filter.public||this.props.currentUser.userData.role === 3 ));
+    let filters = [ ...fixedFilters, ...this.props.filters.filter((filter)=>filter.createdBy===this.props.currentUser.id||filter.public||this.props.currentUser.userData.role === 3 ) ];
     let projects = [{title:i18n.t('all'), id:'all'}].concat(
       this.props.projects.filter((project)=>{
         let curr = this.props.currentUser;
@@ -71,7 +72,7 @@ class Sidebar extends Component {
                 }}
                 >
                 <Left>
-                  <Text style={styles.text}>{data.title}</Text>
+                  <Text style={styles.text}>{i18n.t(data.title)}</Text>
                 </Left>
               </ListItem>
             }

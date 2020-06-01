@@ -42,7 +42,7 @@ class TaskAddTabs extends Component {
 			workHours: '0',
 			requester: this.props.currentUser.id,
 			assignedTo: [],
-			description: '',
+			description: '<p><br></p>',
 			status: status || this.props.statuses[0],
 			deadline: null,
 			closeDate: null,
@@ -103,9 +103,13 @@ class TaskAddTabs extends Component {
 					requester = newRequester.id;
 				}
 			}
-
+			assignedTo = (
+				(def.assignedTo && (def.assignedTo.fixed||def.assignedTo.def)) ?
+				this.props.users.filter((user) => def.assignedTo.value.includes(user.id)) :
+				assignedTo
+			)
 			this.setState({
-				assignedTo: def.assignedTo && (def.assignedTo.fixed||def.assignedTo.def) ? this.props.users.filter((item)=> def.assignedTo.value.includes(item.id)).map((user) => user.id) : assignedTo,
+				assignedTo,
 				company: def.company && (def.company.fixed||def.company.def) ? this.props.companies.find((item)=> item.id === def.company.value) : (this.props.companies && requester ? this.props.companies.find((company)=>company.id===this.props.currentUser.userData.company) : null),
 				requester,
 				status: def.status && (def.status.fixed||def.status.def) ? this.props.statuses.find((item)=> item.id === def.status.value) : this.state.status,

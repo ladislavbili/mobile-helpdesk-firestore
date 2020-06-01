@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { Footer, FooterTab, Container, Content, Button, Icon, Text, List } from 'native-base';
 import { Actions } from 'react-native-router-flux';
 //import {  } from '../../../redux/actions';
+import { fixedFilters, emptyFilter } from '../../../components/sidebar/fixedFilters';
+import { applyTaskFilter } from '../../../helperFunctions'
 import TaskListRow from './taskListRow';
 import i18n from 'i18next';
 
@@ -57,22 +59,25 @@ class TaskList extends Component {
     });
   }
 
-  filterTasksBySearch(){
+  filterTasksBySearch(tasks){
     let filter = this.props.forcedFilter;
-    return this.props.tasks.filter((task)=> ( task.project === this.props.projectID || this.props.projectID === 'all' )).filter((task)=>{
+    return tasks.filter((task)=> ( task.project && task.project.id === this.props.projectID || this.props.projectID === 'all' )).filter((task)=>{
       let currentPermissions = null;
       if(task.project){
-        let project = this.props.projects.find( (project) => project.id === task.project );
-        currentPermissions = project.permissions.find((permission)=>permission.user === this.props.currentUser.id);
+        currentPermissions = task.project.permissions.find((permission)=>permission.user === this.props.currentUser.id);
+      }
+      let assignedToIDs = [];
+      if(task.assignedTo){
+        assignedToIDs = task.assignedTo.map( (assignedTo) => assignedTo.id )
       }
       return (
         ( this.props.currentUser.userData.role.value===3 || ( currentPermissions && currentPermissions.read ) ) &&
         ( filter.title.length === 0 || task.title.toLowerCase().includes(filter.title.toLowerCase()) ) &&
         ( filter.requester.length === 0 || ( task.requester && filter.requester.includes(task.requester) ) ) &&
-        ( filter.status.length === 0 || filter.status.includes(task.status) ) &&
+        ( filter.status.length === 0 || filter.status.includes(task.status.id) ) &&
         ( filter.workType.length === 0 || filter.workType.includes(task.type) ) &&
         ( filter.company.length === 0 || ( task.company && filter.company.incudes(task.company) )) &&
-        ( filter.assigned.length === 0 || ( task.assignedTo && filter.assigned.every((id) => task.assignedTo.includes(id) ) ) ) &&
+        ( filter.assigned.length === 0 || filter.assigned.every( (id) => assignedToIDs.includes(id) ) ) &&
         ( filter.statusDateFrom === null || task.statusChange >= filter.statusDateFrom ) &&
         ( filter.statusDateTo === null || task.statusChange <= filter.statusDateTo ) &&
         ( filter.closeDateFrom === null || task.closeDate >= filter.closeDateFrom ) &&
@@ -83,69 +88,51 @@ class TaskList extends Component {
     })
   }
 
-  filterTasks(){
+  filterTasks(tasks){
     if(this.props.forcedFilter){
-      return this.filterTasksBySearch();
+      return this.filterTasksBySearch(tasks);
     }else{
-      return this.filterTasksByFilter();
+      return this.filterTasksByFilter(tasks);
     }
   }
 
-  filterTasksByFilter(){
-    let filter = this.props.filters.find((filter)=>filter.id === this.props.filterID );
+  filterTasksByFilter(tasks){
+    let filter = ( [...fixedFilters, ...this.props.filters] ).find((filter)=>filter.id === this.props.filterID );
     if(filter !== undefined){
       filter = filter.filter;
+    }else{
+      filter = emptyFilter;
     }
-
-    return this.props.tasks.filter((task)=> ( task.project === this.props.projectID || this.props.projectID === 'all' )).filter((task)=>{
-      let currentPermissions = null;
-      if(task.project){
-        let project = this.props.projects.find( (project) => project.id === task.project );
-        currentPermissions = project.permissions.find((permission)=>permission.user === this.props.currentUser.id);
-      }
-      return filter === undefined || (
-        ( this.props.currentUser.userData.role.value===3 || ( currentPermissions && currentPermissions.read ) ) &&
-        ( filter.requester === null || ( task.requester && task.requester === filter.requester ) || ( task.requester && filter.requester === 'cur' && task.requester === this.props.currentUser.id ) ) &&
-        ( filter.workType === null || ( task.type === filter.workType ) ) &&
-        ( filter.company === null || ( task.company && task.company === filter.company ) || ( task.company && filter.company==='cur' && task.company === this.props.currentUser.userData.company ) ) &&
-        ( filter.assigned === null || ( task.assignedTo && task.assignedTo.includes( filter.assigned ) ) || ( task.assignedTo && filter.requester==='cur' && task.assignedTo.includes( this.props.currentUser.id ) ) ) &&
-        ( filter.statusDateFrom === null || task.statusChange >= filter.statusDateFrom ) &&
-        ( filter.statusDateTo === null || task.statusChange <= filter.statusDateTo ) &&
-        ( filter.closeDateFrom === null || task.closeDate >= filter.closeDateFrom ) &&
-        ( filter.closeDateTo === null || task.closeDate <= filter.closeDateTo ) &&
-        ( filter.pendingDateFrom === null || task.pendingDate >= filter.pendingDateFrom ) &&
-        ( filter.pendingDateTo === null || task.pendingDate <= filter.pendingDateTo )
-      )
-    })
+    return tasks.filter( (task) => applyTaskFilter( task, filter, this.props.currentUser, this.props.projectID ) );
   }
 
   getTasks(){
+    const tasks = this.props.tasks.map( ( task ) => ({
+      ...task,
+      status: this.props.statuses.find( (status) => status.id === task.status),
+      project: this.props.projects.find( (project) => project.id === task.project),
+      assignedTo: this.props.users.filter( (user) => task.assignedTo.includes(user.id) ),
+    }) )
     return this.sortTasks(
-      this.filterTasks().map((task)=>({...task, status:this.props.statuses.find((status)=>status.id === task.status) }))
-    )
-    .slice(0,this.state.show).map((task)=>{
-      return {
-        ...task,
-        project:this.props.projects.find((project)=>project.id === task.project),
-        assignedTo: this.props.users.filter((user)=>task.assignedTo.includes(user.id)),
-      }
-    });
+      this.filterTasks(tasks)
+    );
   }
 
   render() {
+    const tasks = this.getTasks();
     return (
       <Container>
         <Content>
           <List>
             {
-              this.getTasks().map((task) => <TaskListRow task={task} key={task.id} />)
+              tasks.slice(0,this.state.show).map((task) => <TaskListRow task={task} key={task.id} />)
             }
           </List>
           {
-            this.filterTasks().length==0 && <Text style={{padding:20}}>{i18n.t('emptyTaskList')}</Text>
+            tasks.length==0 && <Text style={{padding:20}}>{i18n.t('emptyTaskList')}</Text>
         }
         {
-          this.filterTasks().length > this.state.show &&
+          tasks.length > this.state.show &&
           <Button
             block
             primary
